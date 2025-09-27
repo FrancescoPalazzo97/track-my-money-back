@@ -51,10 +51,10 @@ const expenseSchema = new Schema<ExpenseDocument>({
         minlength: 1,
         maxlength: 100
     },
-    // Data della spesa in formato ISO string
+    // Data della spesa - default alla data corrente se non specificata
     expenseDate: {
-        type: String,
-        required: true
+        type: Date,
+        default: Date.now
     },
     // Importo della spesa nella valuta originale (deve essere positivo)
     amount: {

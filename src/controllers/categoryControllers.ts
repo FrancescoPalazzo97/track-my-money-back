@@ -1,10 +1,6 @@
 import { Request, Response } from "express";
 import { CategoryInputZSchema, CategoryModel, TSuccess } from "../models";
 import { resultMessage } from "../lib/utility";
-import z from "zod";
-import { it } from "zod/locales";
-
-z.config(it());
 
 export const getAllCategories = async (req: Request, res: Response) => {
     const categories = await CategoryModel.find().populate('parentCategory')

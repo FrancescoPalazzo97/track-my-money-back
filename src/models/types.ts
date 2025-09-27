@@ -1,4 +1,4 @@
-import { Document, Types } from "mongoose";
+import { Document, Schema, Types } from "mongoose";
 import z from "zod";
 
 /**
@@ -66,17 +66,18 @@ export type CategoryDocument = CategoryType & Document;
 export const ExpenseInputZSchema = z.object({
   title: z.string().min(1).max(50), // Titolo della spesa (1-50 caratteri)
   description: z.string().min(1).max(100).optional(), // Descrizione opzionale (1-100 caratteri)
-  expenseDate: z.iso.datetime(), // Data della spesa in formato ISO
+  expenseDate: z.date().optional(), // Data della spesa - opzionale, default alla data corrente
   amount: z.number().positive(), // Importo (deve essere positivo)
   currency: z.enum(codes), // Codice valuta (deve essere uno dei codici supportati)
   convertedAmount: z.array(z.string()), // Array di importi convertiti in altre valute
-  category: Types.ObjectId // Riferimento alla categoria di appartenenza
+  category: z.string() // Riferimento alla categoria di appartenenza
 });
 
 // Schema completo della spesa con timestamp
 export const ExpenseZSchema = ExpenseInputZSchema.extend({
-  createdAt: z.iso.datetime(), // Data di creazione
-  updatedAt: z.iso.datetime() // Data di ultimo aggiornamento
+  expenseDate: z.date(), // Data della spesa (richiesta nello schema completo)
+  createdAt: z.date(), // Data di creazione
+  updatedAt: z.date() // Data di ultimo aggiornamento
 })
 
 // Tipi TypeScript derivati dagli schemi Zod
