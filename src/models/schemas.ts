@@ -13,6 +13,11 @@ const categorySchema = new Schema<CategoryDocument>({
     },
     description: {
         type: String
+    },
+    parentCategory: {
+        type: Schema.Types.ObjectId,
+        ref: 'Category',
+        required: false
     }
 }, {
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
@@ -53,5 +58,5 @@ const expenseSchema = new Schema<ExpenseDocument>({
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
-export const Category = model<CategoryDocument>('Category', categorySchema);
-export const Expense = model<ExpenseDocument>('Expense', expenseSchema);
+export const CategoryModel = model<CategoryDocument>('Category', categorySchema);
+export const ExpenseModel = model<ExpenseDocument>('Expense', expenseSchema);

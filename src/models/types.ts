@@ -1,4 +1,4 @@
-import { Document, Types, Schema, model } from "mongoose";
+import { Document, Types } from "mongoose";
 import z from "zod";
 
 const codes = [
@@ -30,28 +30,55 @@ const codes = [
   'ZAR', 'ZMK', 'ZMW', 'ZWG', 'ZWL'
 ] as const;
 
-export const CategoryZSchema = z.object({
+// Categorie
+export const CategoryInputZSchema = z.object({
   name: z.string(),
   type: z.enum(['income', 'expense']),
   description: z.string().optional(),
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime()
+  parentCategory: z.string().optional()
 });
 
+export const CategoryZSchema = CategoryInputZSchema.extend({
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+})
+
 export type CategoryType = z.infer<typeof CategoryZSchema>;
+export type CategoryInputType = z.infer<typeof CategoryInputZSchema>;
 export type CategoryDocument = CategoryType & Document;
 
-export const ExpenseZSchema = z.object({
+// Spese
+export const ExpenseInputZSchema = z.object({
   title: z.string().min(1).max(50),
   description: z.string().min(1).max(100).optional(),
   expenseDate: z.iso.datetime(),
   amount: z.number().positive(),
   currency: z.enum(codes),
   convertedAmount: z.array(z.string()),
-  category: Types.ObjectId,
-  createdAt: z.iso.datetime(),
-  updatedAt: z.iso.datetime()
+  category: Types.ObjectId
 });
 
+export const ExpenseZSchema = ExpenseInputZSchema.extend({
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+})
+
 export type ExpenseType = z.infer<typeof ExpenseZSchema>;
+export type ExpenseInputType = z.infer<typeof ExpenseInputZSchema>;
 export type ExpenseDocument = ExpenseType & Document;
+
+// Messaggio di avvenuto successo
+export const SuccessSchema = z.object({
+  success: z.boolean(),
+  message: z.string()
+})
+
+export type TSuccess = z.infer<typeof SuccessSchema>
+
+// Schema ZodError
+export const ZodErrorSchema = z.array(z.object({
+  expected: z.string(),
+  code: z.string(),
+  path: z.array(z.string()),
+  message: z.string()
+}));
