@@ -54,7 +54,7 @@ const objectIdSchema = createObjectIdSchema();
 
 // Schema per input categoria
 export const CategoryInputZSchema = z.object({
-  name: z.string(), // Nome della categoria
+  name: z.string().trim().min(1).max(50), // Nome della categoria
   type: z.enum(['income', 'expense']), // Tipo: income o expense
   description: z.string().optional(), // Descrizione opzionale
   parentCategory: objectIdSchema.optional() // ID categoria padre
@@ -67,9 +67,9 @@ export const CategoryZSchema = CategoryInputZSchema.extend({
 })
 
 // Tipi TypeScript
-export type CategoryType = z.infer<typeof CategoryZSchema>;
-export type CategoryInputType = z.infer<typeof CategoryInputZSchema>;
-export type CategoryDocument = CategoryType & Document;
+export type TCategory = z.infer<typeof CategoryZSchema>;
+export type TCategoryInput = z.infer<typeof CategoryInputZSchema>;
+export type CategoryDocument = TCategory & Document;
 
 /**
  * SCHEMI E TIPI PER LE SPESE/ENTRATE
@@ -77,8 +77,8 @@ export type CategoryDocument = CategoryType & Document;
 
 // Schema per input spesa
 export const ExpenseInputZSchema = z.object({
-  title: z.string().min(1).max(50), // Titolo della spesa
-  description: z.string().min(1).max(100).optional(), // Descrizione opzionale
+  title: z.string().trim().min(1).max(50), // Titolo della spesa
+  description: z.string().max(100).optional(), // Descrizione opzionale
   expenseDate: z.date().optional(), // Data della spesa
   amount: z.number().positive(), // Importo
   currency: z.enum(codes), // Codice valuta
@@ -94,9 +94,9 @@ export const ExpenseZSchema = ExpenseInputZSchema.extend({
 });
 
 // Tipi TypeScript
-export type ExpenseType = z.infer<typeof ExpenseZSchema>;
-export type ExpenseInputType = z.infer<typeof ExpenseInputZSchema>;
-export type ExpenseDocument = ExpenseType & Document;
+export type TExpense = z.infer<typeof ExpenseZSchema>;
+export type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
+export type ExpenseDocument = TExpense & Document;
 
 /**
  * SCHEMI PER LE RISPOSTE API
@@ -109,11 +109,3 @@ export const SuccessSchema = z.object({
 });
 
 export type TSuccess = z.infer<typeof SuccessSchema>;
-
-// Schema per errori di validazione
-export const ZodErrorSchema = z.array(z.object({
-  expected: z.string(), // Tipo atteso
-  code: z.string(), // Codice errore
-  path: z.array(z.string()), // Percorso campo
-  message: z.string() // Messaggio errore
-}));
