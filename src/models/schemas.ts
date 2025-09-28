@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import type { CategoryDocument, ExpenseDocument } from "./types";
+import { codes } from "./types";
 
 /**
  * Schema Mongoose per le categorie
@@ -9,7 +10,9 @@ const categorySchema = new Schema<CategoryDocument>({
     // Nome della categoria
     name: {
         type: String,
-        required: true
+        required: true,
+        minlength: 1,
+        maxlength: 50
     },
     // Tipo: income o expense
     type: {
@@ -64,7 +67,8 @@ const expenseSchema = new Schema<ExpenseDocument>({
     // Codice valuta
     currency: {
         type: String,
-        required: true
+        required: true,
+        enum: codes
     },
     // Importi convertiti in altre valute
     convertedAmount: [{ type: String }],

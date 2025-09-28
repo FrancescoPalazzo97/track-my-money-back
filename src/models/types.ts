@@ -80,7 +80,7 @@ export const ExpenseInputZSchema = z.object({
   title: z.string().trim().min(1).max(50), // Titolo della spesa
   description: z.string().max(100).optional(), // Descrizione opzionale
   expenseDate: z.date().optional(), // Data della spesa
-  amount: z.number().positive(), // Importo
+  amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
   convertedAmount: z.array(z.string()), // Importi convertiti
   category: objectIdSchema // Riferimento alla categoria
