@@ -103,12 +103,12 @@ export type ExpenseDocument = ExpenseType & Document;
  */
 
 // Schema per messaggi di successo
-export const ResponseSchema = z.object({
+export const SuccessSchema = z.object({
   success: z.boolean(), // Successo operazione
   message: z.string() // Messaggio descrittivo
 });
 
-export type TResponse = z.infer<typeof ResponseSchema>;
+export type TSuccess = z.infer<typeof SuccessSchema>;
 
 // Schema per errori di validazione
 export const ZodErrorSchema = z.array(z.object({

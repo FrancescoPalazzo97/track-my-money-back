@@ -1,4 +1,4 @@
-import { TResponse, ZodErrorSchema } from "../models";
+import { TSuccess, ZodErrorSchema } from "../models";
 
 export function formatZodMessage(message: string): string {
     const result = ZodErrorSchema.safeParse(JSON.parse(message));
@@ -9,7 +9,7 @@ export function formatZodMessage(message: string): string {
     }
 };
 
-export function resultMessage(success: boolean, message: string): TResponse {
+export function resultMessage(success: boolean, message: string): TSuccess {
     if (!success) {
         return {
             success,

@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
-import { TResponse } from '../models';
+import { TSuccess } from '../models';
 
 export const errorsHandler = (
     error: unknown,
     req: Request,
-    res: Response<TResponse>,
+    res: Response<TSuccess>,
     next: NextFunction
 ) => {
     // Gestione errori Zod
