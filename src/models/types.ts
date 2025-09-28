@@ -91,7 +91,7 @@ export const ExpenseZSchema = ExpenseInputZSchema.extend({
   expenseDate: z.date(), // Data della spesa
   createdAt: z.date(), // Data creazione
   updatedAt: z.date() // Data aggiornamento
-})
+});
 
 // Tipi TypeScript
 export type ExpenseType = z.infer<typeof ExpenseZSchema>;
@@ -103,12 +103,12 @@ export type ExpenseDocument = ExpenseType & Document;
  */
 
 // Schema per messaggi di successo
-export const SuccessSchema = z.object({
+export const ResponseSchema = z.object({
   success: z.boolean(), // Successo operazione
   message: z.string() // Messaggio descrittivo
-})
+});
 
-export type TSuccess = z.infer<typeof SuccessSchema>
+export type TResponse = z.infer<typeof ResponseSchema>;
 
 // Schema per errori di validazione
 export const ZodErrorSchema = z.array(z.object({
