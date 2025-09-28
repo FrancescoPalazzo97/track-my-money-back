@@ -2,84 +2,83 @@ import { Schema, model } from "mongoose";
 import type { CategoryDocument, ExpenseDocument } from "./types";
 
 /**
- * Schema per le categorie di spese e entrate
- * Supporta la creazione di una struttura gerarchica tramite parentCategory
+ * Schema Mongoose per le categorie
+ * Supporta categorie di tipo income e expense con struttura gerarchica
  */
 const categorySchema = new Schema<CategoryDocument>({
-    // Nome della categoria (es. "Alimentari", "Stipendio")
+    // Nome della categoria
     name: {
         type: String,
         required: true
     },
-    // Tipo di categoria: income per entrate, expense per spese
+    // Tipo: income o expense
     type: {
         type: String,
         enum: ['income', 'expense'],
         required: true
     },
-    // Descrizione opzionale della categoria
+    // Descrizione opzionale
     description: {
         type: String
     },
-    // Riferimento alla categoria padre per creare una gerarchia
-    // Es. "Alimentari" -> "Supermercato", "Ristoranti"
+    // Riferimento alla categoria padre per struttura gerarchica
     parentCategory: {
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: false
     }
 }, {
-    // Aggiunge automaticamente i campi createdAt e updatedAt
+    // Timestamp automatici
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
 /**
- * Schema per le spese/entrate effettive
- * Ogni spesa è collegata a una categoria e contiene informazioni sulla valuta
+ * Schema Mongoose per le spese/entrate
+ * Include informazioni su importo, valuta e categoria di appartenenza
  */
 const expenseSchema = new Schema<ExpenseDocument>({
-    // Titolo breve della spesa (1-50 caratteri)
+    // Titolo della spesa
     title: {
         type: String,
         required: true,
         minlength: 1,
         maxlength: 50
     },
-    // Descrizione dettagliata opzionale (1-100 caratteri)
+    // Descrizione opzionale
     description: {
         type: String,
         minlength: 1,
         maxlength: 100
     },
-    // Data della spesa - default alla data corrente se non specificata
+    // Data della spesa
     expenseDate: {
         type: Date,
         default: Date.now
     },
-    // Importo della spesa nella valuta originale (deve essere positivo)
+    // Importo della spesa
     amount: {
         type: Number,
         required: true,
         min: 0
     },
-    // Codice valuta (es. EUR, USD, BTC) - deve essere uno dei codici supportati
+    // Codice valuta
     currency: {
         type: String,
         required: true
     },
-    // Array di importi convertiti in altre valute (formato stringa)
+    // Importi convertiti in altre valute
     convertedAmount: [{ type: String }],
-    // Riferimento alla categoria di appartenenza
+    // Riferimento alla categoria
     category: {
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: true
     }
 }, {
-    // Aggiunge automaticamente i campi createdAt e updatedAt
+    // Timestamp automatici
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
-// Esportazione dei modelli Mongoose per l'interazione con il database
+// Modelli Mongoose
 export const CategoryModel = model<CategoryDocument>('Category', categorySchema);
 export const ExpenseModel = model<ExpenseDocument>('Expense', expenseSchema);

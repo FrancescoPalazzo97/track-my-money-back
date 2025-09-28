@@ -2,11 +2,10 @@ import { Document, Schema, Types } from "mongoose";
 import z from "zod";
 
 /**
- * Lista completa dei codici di valuta supportati
- * Include valute fiat tradizionali e criptovalute
- * Formato basato su ISO 4217 per valute fiat e codici standard per crypto
+ * Codici di valuta supportati
+ * Include valute fiat e criptovalute
  */
-const codes = [
+export const codes = [
   'ADA', 'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARB', 'ARS', 'AUD', 'AVAX', 'AWG', 'AZN',
   'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BNB', 'BND', 'BOB', 'BRL', 'BSD', 'BTC', 'BTN', 'BWP', 'BYN', 'BYR', 'BZD',
   'CAD', 'CDF', 'CHF', 'CLF', 'CLP', 'CNY', 'COP', 'CRC', 'CUC', 'CUP', 'CVE', 'CZK',
@@ -39,21 +38,35 @@ const codes = [
  * SCHEMI E TIPI PER LE CATEGORIE
  */
 
-// Schema di validazione per l'input di una nuova categoria
+const createObjectIdSchema = () => z
+  .union([
+    z.string().refine(
+      (val) => Types.ObjectId.isValid(val),
+      { message: "ObjectId non valido!" }
+    ),
+    z.instanceof(Types.ObjectId)
+  ])
+  .transform((val) =>
+    typeof val === 'string' ? new Types.ObjectId(val) : val
+  );
+
+const objectIdSchema = createObjectIdSchema();
+
+// Schema per input categoria
 export const CategoryInputZSchema = z.object({
   name: z.string(), // Nome della categoria
-  type: z.enum(['income', 'expense']), // Tipo: entrata o spesa
+  type: z.enum(['income', 'expense']), // Tipo: income o expense
   description: z.string().optional(), // Descrizione opzionale
-  parentCategory: z.string().optional() // ID della categoria padre (per gerarchia)
+  parentCategory: objectIdSchema.optional() // ID categoria padre
 });
 
-// Schema completo della categoria con timestamp
+// Schema categoria completo
 export const CategoryZSchema = CategoryInputZSchema.extend({
-  createdAt: z.iso.datetime(), // Data di creazione
-  updatedAt: z.iso.datetime() // Data di ultimo aggiornamento
+  createdAt: z.iso.datetime(), // Data creazione
+  updatedAt: z.iso.datetime() // Data aggiornamento
 })
 
-// Tipi TypeScript derivati dagli schemi Zod
+// Tipi TypeScript
 export type CategoryType = z.infer<typeof CategoryZSchema>;
 export type CategoryInputType = z.infer<typeof CategoryInputZSchema>;
 export type CategoryDocument = CategoryType & Document;
@@ -62,25 +75,25 @@ export type CategoryDocument = CategoryType & Document;
  * SCHEMI E TIPI PER LE SPESE/ENTRATE
  */
 
-// Schema di validazione per l'input di una nuova spesa
+// Schema per input spesa
 export const ExpenseInputZSchema = z.object({
-  title: z.string().min(1).max(50), // Titolo della spesa (1-50 caratteri)
-  description: z.string().min(1).max(100).optional(), // Descrizione opzionale (1-100 caratteri)
-  expenseDate: z.date().optional(), // Data della spesa - opzionale, default alla data corrente
-  amount: z.number().positive(), // Importo (deve essere positivo)
-  currency: z.enum(codes), // Codice valuta (deve essere uno dei codici supportati)
-  convertedAmount: z.array(z.string()), // Array di importi convertiti in altre valute
-  category: z.string() // Riferimento alla categoria di appartenenza
+  title: z.string().min(1).max(50), // Titolo della spesa
+  description: z.string().min(1).max(100).optional(), // Descrizione opzionale
+  expenseDate: z.date().optional(), // Data della spesa
+  amount: z.number().positive(), // Importo
+  currency: z.enum(codes), // Codice valuta
+  convertedAmount: z.array(z.string()), // Importi convertiti
+  category: objectIdSchema // Riferimento alla categoria
 });
 
-// Schema completo della spesa con timestamp
+// Schema spesa completo
 export const ExpenseZSchema = ExpenseInputZSchema.extend({
-  expenseDate: z.date(), // Data della spesa (richiesta nello schema completo)
-  createdAt: z.date(), // Data di creazione
-  updatedAt: z.date() // Data di ultimo aggiornamento
+  expenseDate: z.date(), // Data della spesa
+  createdAt: z.date(), // Data creazione
+  updatedAt: z.date() // Data aggiornamento
 })
 
-// Tipi TypeScript derivati dagli schemi Zod
+// Tipi TypeScript
 export type ExpenseType = z.infer<typeof ExpenseZSchema>;
 export type ExpenseInputType = z.infer<typeof ExpenseInputZSchema>;
 export type ExpenseDocument = ExpenseType & Document;
@@ -89,18 +102,18 @@ export type ExpenseDocument = ExpenseType & Document;
  * SCHEMI PER LE RISPOSTE API
  */
 
-// Schema per messaggi di successo delle operazioni
+// Schema per messaggi di successo
 export const SuccessSchema = z.object({
-  success: z.boolean(), // Indica se l'operazione è riuscita
-  message: z.string() // Messaggio descrittivo del risultato
+  success: z.boolean(), // Successo operazione
+  message: z.string() // Messaggio descrittivo
 })
 
 export type TSuccess = z.infer<typeof SuccessSchema>
 
-// Schema per gli errori di validazione Zod
+// Schema per errori di validazione
 export const ZodErrorSchema = z.array(z.object({
-  expected: z.string(), // Tipo di dato atteso
-  code: z.string(), // Codice dell'errore
-  path: z.array(z.string()), // Percorso del campo che ha generato l'errore
-  message: z.string() // Messaggio descrittivo dell'errore
+  expected: z.string(), // Tipo atteso
+  code: z.string(), // Codice errore
+  path: z.array(z.string()), // Percorso campo
+  message: z.string() // Messaggio errore
 }));
