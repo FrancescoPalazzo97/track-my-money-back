@@ -2,6 +2,7 @@ import express from "express";
 import { connectToMongo, disconnectToMongo } from "./db/connection";
 import categoryRoute from './routers/categoryRoute';
 import expenseRoute from './routers/expenseRouter';
+import { errorsHandler } from './middlewares/errorsHandler';
 import z from "zod";
 import { it } from "zod/locales";
 
@@ -18,6 +19,8 @@ app.use('/expense', expenseRoute);
 app.use('/', (req, res) => {
     res.send('Benvenuto in Track My Money!');
 });
+
+app.use(errorsHandler);
 
 const startServer = async (): Promise<void> => {
     try {
