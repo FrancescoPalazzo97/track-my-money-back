@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { Document, Types } from "mongoose";
 import z from "zod";
 
@@ -82,7 +83,6 @@ export const ExpenseInputZSchema = z.object({
   expenseDate: z.date().optional(), // Data della spesa
   amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
-  convertedAmount: z.array(z.string()), // Importi convertiti
   category: objectIdSchema // Riferimento alla categoria
 });
 
@@ -122,7 +122,7 @@ export const CurrencyRateSchema = z.object({
 
 // Schema per i metadati della risposta
 export const ExchangeRateMetaSchema = z.object({
-  last_updated_at: z.iso.datetime() // Data ultimo aggiornamento
+  last_updated_at: z.date() // Data ultimo aggiornamento
 });
 
 // Schema per la risposta completa dell'API exchange rate
@@ -135,3 +135,32 @@ export const ExchangeRateResponseSchema = z.object({
 export type TCurrencyRate = z.infer<typeof CurrencyRateSchema>;
 export type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaSchema>;
 export type TExchangeRateResponse = z.infer<typeof ExchangeRateResponseSchema>;
+export type ExchangeRateDocument = TExchangeRateResponse & Document;
+
+/**
+ * SCHEMI PER LE QUOTE API
+ */
+
+// Schema per una quota (month o grace)
+export const QuotaSchema = z.object({
+  total: z.number(),
+  used: z.number(),
+  remaining: z.number()
+});
+
+// Schema per le quote complete
+export const QuotasSchema = z.object({
+  month: QuotaSchema,
+  grace: QuotaSchema
+});
+
+// Schema per la risposta delle quote API
+export const ApiQuotasResponseSchema = z.object({
+  account_id: z.number(),
+  quotas: QuotasSchema
+});
+
+// Tipi TypeScript
+export type TQuota = z.infer<typeof QuotaSchema>;
+export type TQuotas = z.infer<typeof QuotasSchema>;
+export type TApiQuotasResponse = z.infer<typeof ApiQuotasResponseSchema>;

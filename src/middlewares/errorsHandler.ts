@@ -13,7 +13,7 @@ export const errorsHandler = (
         return res.status(400).json({
             success: false,
             message: error.issues.map(issue =>
-                `${issue.path.join('.')}: ${issue.message}`
+                `ZodError: ${issue.path.join('.')}: ${issue.message}`
             ).join(', ')
         });
     }
@@ -22,7 +22,7 @@ export const errorsHandler = (
     if (error instanceof Error) {
         return res.status(500).json({
             success: false,
-            message: error.message
+            message: `Error: ${error.message}`
         });
     }
 
