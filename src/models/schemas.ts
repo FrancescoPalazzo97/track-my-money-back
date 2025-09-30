@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import type { CategoryDocument, ExpenseDocument } from "./types";
+import type { CategoryDocument, ExpenseDocument, ExchangeRateDocument } from "./types";
 import { codes } from "./types";
 
 /**
@@ -70,8 +70,6 @@ const expenseSchema = new Schema<ExpenseDocument>({
         required: true,
         enum: codes
     },
-    // Importi convertiti in altre valute
-    convertedAmount: [{ type: String }],
     // Riferimento alla categoria
     category: {
         type: Schema.Types.ObjectId,
@@ -83,6 +81,37 @@ const expenseSchema = new Schema<ExpenseDocument>({
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
+/**
+ * Schema Mongoose per i dati dei tassi di cambio
+ * Memorizza i tassi di cambio per tutte le valute supportate
+ */
+const currencyRateSchema = new Schema({
+    code: {
+        type: String,
+        required: true,
+        enum: codes
+    },
+    value: {
+        type: Number,
+        required: true
+    }
+}, { _id: false });
+
+const exchangeRateSchema = new Schema<ExchangeRateDocument>({
+    meta: {
+        last_updated_at: {
+            type: Date,
+            required: true
+        }
+    },
+    data: {
+        type: Map,
+        of: currencyRateSchema,
+        required: true
+    }
+});
+
 // Modelli Mongoose
 export const CategoryModel = model<CategoryDocument>('Category', categorySchema);
 export const ExpenseModel = model<ExpenseDocument>('Expense', expenseSchema);
+export const ExchangeRateModel = model<ExchangeRateDocument>('ExchangeRate', exchangeRateSchema);
