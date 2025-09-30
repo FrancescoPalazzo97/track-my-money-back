@@ -109,3 +109,29 @@ export const SuccessSchema = z.object({
 });
 
 export type TSuccess = z.infer<typeof SuccessSchema>;
+
+/**
+ * SCHEMI PER LE API DI EXCHANGE RATE
+ */
+
+// Schema per una singola valuta
+export const CurrencyRateSchema = z.object({
+  code: z.enum(codes), // Codice valuta
+  value: z.number() // Valore di cambio
+});
+
+// Schema per i metadati della risposta
+export const ExchangeRateMetaSchema = z.object({
+  last_updated_at: z.iso.datetime() // Data ultimo aggiornamento
+});
+
+// Schema per la risposta completa dell'API exchange rate
+export const ExchangeRateResponseSchema = z.object({
+  meta: ExchangeRateMetaSchema, // Metadati
+  data: z.record(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
+});
+
+// Tipi TypeScript
+export type TCurrencyRate = z.infer<typeof CurrencyRateSchema>;
+export type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaSchema>;
+export type TExchangeRateResponse = z.infer<typeof ExchangeRateResponseSchema>;
