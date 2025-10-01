@@ -83,7 +83,9 @@ export const ExpenseInputZSchema = z.object({
   expenseDate: z.date().optional(), // Data della spesa
   amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
-  category: objectIdSchema // Riferimento alla categoria
+  category: objectIdSchema, // Riferimento alla categoria
+  exchangeRateSnapshot: z.number().optional(), // Tasso al momento della spesa
+  convertedAmount: z.number().optional(), // Importo convertito in euro
 });
 
 // Schema spesa completo

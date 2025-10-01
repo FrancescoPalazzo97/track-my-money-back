@@ -75,6 +75,14 @@ const expenseSchema = new Schema<ExpenseDocument>({
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: true
+    },
+    exchangeRateSnapshot: {
+        type: Number,
+        required: false
+    },
+    convertedAmount: {
+        type: Number,
+        required: false
     }
 }, {
     // Timestamp automatici
