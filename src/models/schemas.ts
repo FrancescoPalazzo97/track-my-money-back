@@ -108,7 +108,7 @@ const currencyRateSchema = new Schema({
 const exchangeRateSchema = new Schema<ExchangeRateDocument>({
     meta: {
         last_updated_at: {
-            type: Date,
+            type: String,
             required: true
         }
     },
@@ -118,6 +118,8 @@ const exchangeRateSchema = new Schema<ExchangeRateDocument>({
         required: true
     }
 });
+
+exchangeRateSchema.index({ 'meta.last_updated_at': -1 });
 
 // Modelli Mongoose
 export const CategoryModel = model<CategoryDocument>('Category', categorySchema);

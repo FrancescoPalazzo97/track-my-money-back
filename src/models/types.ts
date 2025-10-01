@@ -80,7 +80,7 @@ export type CategoryDocument = TCategory & Document;
 export const ExpenseInputZSchema = z.object({
   title: z.string().trim().min(1).max(50), // Titolo della spesa
   description: z.string().max(100).optional(), // Descrizione opzionale
-  expenseDate: z.date().optional(), // Data della spesa
+  expenseDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
   amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
   category: objectIdSchema, // Riferimento alla categoria
@@ -130,7 +130,7 @@ export const ExchangeRateMetaSchema = z.object({
 // Schema per la risposta completa dell'API exchange rate
 export const ExchangeRateResponseSchema = z.object({
   meta: ExchangeRateMetaSchema, // Metadati
-  data: z.record(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
+  data: z.map(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
 });
 
 // Tipi TypeScript
