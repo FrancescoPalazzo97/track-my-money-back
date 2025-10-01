@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess } from "../models";
+import { ExpenseInputZSchema, ExpenseModel, TSuccess } from "../models";
 
 export const getExpenses = async (req: Request, res: Response) => {
     const expenses = await ExpenseModel.find().populate('category');
