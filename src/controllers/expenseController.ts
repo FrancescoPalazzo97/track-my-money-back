@@ -54,22 +54,19 @@ export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
 
 export const deleteExpense = async (req: Request, res: Response<TSuccess>) => {
     const expenseId = objectIdSchema.parse(req.params.id);
-
-    await ExpenseModel.deleteOne({ _id: expenseId });
-
+    const opereationResult = await ExpenseModel.deleteOne({ _id: expenseId });
+    if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la spesa non è stata trovata!');
     res.status(200).json({ success: true, message: "Spesa eliminata con successo" });
 };
 
 export const modifyExpense = async (req: Request, res: Response<TSuccess>) => {
     const expenseId = objectIdSchema.parse(req.params.id);
-
     const updates = ExpenseInputZSchemaForPatch.parse(req.body);
-
-    await ExpenseModel.findByIdAndUpdate(
+    const opereationResult = await ExpenseModel.findByIdAndUpdate(
         expenseId,
         updates,
         { new: true, runValidators: true }
     );
-
+    if (!opereationResult) throw new Error('Impossibile modificare la spesa non è stata trovata!');
     res.status(200).json({ success: true, message: "Spesa modificata con successo!" })
 }
