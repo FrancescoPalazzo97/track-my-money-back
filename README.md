@@ -93,6 +93,22 @@ Recupera tutte le categorie con popolamento delle categorie parent.
 ]
 ```
 
+#### GET /categories/:id
+Recupera una categoria specifica per ID.
+
+**Risposta:**
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "name": "Alimentari",
+  "type": "expense",
+  "description": "Spese per cibo e bevande",
+  "parentCategory": null,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
 #### POST /categories
 Crea una nuova categoria.
 
@@ -111,6 +127,36 @@ Crea una nuova categoria.
 {
   "success": true,
   "message": "Nuova Categoria aggiunta!"
+}
+```
+
+#### PATCH /categories/:id
+Modifica una categoria esistente. Tutti i campi sono opzionali.
+
+**Body:**
+```json
+{
+  "name": "Supermercato",
+  "description": "Spese per alimentari e generi vari"
+}
+```
+
+**Risposta:**
+```json
+{
+  "success": true,
+  "message": "Categoria modificata con successo!"
+}
+```
+
+#### DELETE /categories/:id
+Elimina una categoria.
+
+**Risposta:**
+```json
+{
+  "success": true,
+  "message": "Categoria Eliminata con successo!"
 }
 ```
 
@@ -134,14 +180,36 @@ Recupera tutte le spese con popolamento delle categorie associate.
       "name": "Alimentari",
       "type": "expense"
     },
+    "exchangeRateSnapshot": 1,
+    "convertedAmount": 50.00,
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
 ]
 ```
 
+#### GET /expense/:id
+Recupera una spesa specifica per ID.
+
+**Risposta:**
+```json
+{
+  "_id": "507f1f77bcf86cd799439012",
+  "title": "Spesa al supermercato",
+  "description": "Spesa settimanale",
+  "expenseDate": "2024-01-01T00:00:00.000Z",
+  "amount": 50.00,
+  "currency": "EUR",
+  "category": "507f1f77bcf86cd799439011",
+  "exchangeRateSnapshot": 1,
+  "convertedAmount": 50.00,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
 #### POST /expense
-Crea una nuova spesa.
+Crea una nuova spesa. Il sistema calcola automaticamente `exchangeRateSnapshot` e `convertedAmount` in base ai tassi di cambio storici.
 
 **Body:**
 ```json
@@ -163,7 +231,42 @@ Crea una nuova spesa.
 }
 ```
 
-**Nota:** Il campo `expenseDate` è opzionale e usa la data corrente se non specificato.
+**Note:**
+- Il campo `expenseDate` è opzionale e usa la data corrente se non specificato
+- `exchangeRateSnapshot` e `convertedAmount` sono calcolati automaticamente dal sistema
+- La conversione usa il tasso di cambio più recente disponibile alla data della spesa
+
+#### PATCH /expense/:id
+Modifica una spesa esistente. Tutti i campi sono opzionali.
+
+**Body:**
+```json
+{
+  "title": "Spesa mensile",
+  "amount": 75.00
+}
+```
+
+**Risposta:**
+```json
+{
+  "success": true,
+  "message": "Spesa modificata con successo!"
+}
+```
+
+**Nota:** Non è possibile modificare `exchangeRateSnapshot` e `convertedAmount` tramite PATCH.
+
+#### DELETE /expense/:id
+Elimina una spesa.
+
+**Risposta:**
+```json
+{
+  "success": true,
+  "message": "Spesa eliminata con successo"
+}
+```
 
 ## 📊 Modelli Dati
 
@@ -182,6 +285,8 @@ Crea una nuova spesa.
 - `amount`: Importo (numero positivo)
 - `currency`: Codice valuta (enum con 120+ valute: ISO 4217 + criptovalute)
 - `category`: Riferimento alla categoria (obbligatorio, ObjectId)
+- `exchangeRateSnapshot`: Tasso di cambio al momento della spesa (calcolato automaticamente)
+- `convertedAmount`: Importo convertito in EUR (calcolato automaticamente)
 - `createdAt`: Data di creazione (automatica)
 - `updatedAt`: Data di aggiornamento (automatica)
 
@@ -217,6 +322,7 @@ src/
 - **Error handling centralizzato**: Tutti gli errori (Zod, standard, sconosciuti) vengono gestiti dal middleware in `src/middlewares/errorsHandler.ts`.
 - **Popolamento relazioni**: Le query usano `.populate()` di Mongoose per includere automaticamente i dati delle relazioni (es. categoria padre, categoria della spesa).
 - **Graceful shutdown**: Il server gestisce SIGINT e SIGTERM per disconnettersi correttamente da MongoDB prima di terminare.
+- **Conversione automatica valute**: Quando si crea una spesa, il sistema calcola automaticamente `exchangeRateSnapshot` e `convertedAmount` usando i tassi di cambio storici dal database. La formula di conversione è: `euroData.value / currencyData.value`.
 
 ## 🔧 Stack Tecnologico
 
