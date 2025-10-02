@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Document, Types } from "mongoose";
 import z from "zod";
 
@@ -88,6 +87,16 @@ export const ExpenseInputZSchema = z.object({
   convertedAmount: z.number().optional(), // Importo convertito in euro
 });
 
+// Schema per PATCH spesa (tutti i campi opzionali)
+export const ExpenseInputZSchemaForPatch = z.object({
+  title: z.string().trim().min(1).max(50).optional(),
+  description: z.string().max(100).optional(),
+  expenseDate: z.coerce.date().optional(),
+  amount: z.number().nonnegative().optional(),
+  currency: z.enum(codes).optional(),
+  category: objectIdSchema.optional(),
+}).strict();
+
 // Schema spesa completo
 export const ExpenseZSchema = ExpenseInputZSchema.extend({
   expenseDate: z.date(), // Data della spesa
@@ -98,6 +107,7 @@ export const ExpenseZSchema = ExpenseInputZSchema.extend({
 // Tipi TypeScript
 export type TExpense = z.infer<typeof ExpenseZSchema>;
 export type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
+export type TExpenseInputForPatch = z.infer<typeof ExpenseInputZSchemaForPatch>;
 export type ExpenseDocument = TExpense & Document;
 
 /**

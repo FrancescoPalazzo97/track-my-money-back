@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import dayjs from "dayjs";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema } from "../models";
+import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch } from "../models";
 import { round } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
@@ -14,7 +14,7 @@ export const getExpensesById = async (req: Request, res: Response) => {
     const expense = await ExpenseModel.findById(expenseId);
 
     res.status(201).json(expense);
-}
+};
 
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     const result = ExpenseInputZSchema.parse(req.body);
@@ -58,4 +58,18 @@ export const deleteExpense = async (req: Request, res: Response<TSuccess>) => {
     await ExpenseModel.deleteOne({ _id: expenseId });
 
     res.status(200).json({ success: true, message: "Spesa eliminata con successo" });
+};
+
+export const modifyExpense = async (req: Request, res: Response<TSuccess>) => {
+    const expenseId = objectIdSchema.parse(req.params.id);
+
+    const updates = ExpenseInputZSchemaForPatch.parse(req.body);
+
+    await ExpenseModel.findByIdAndUpdate(
+        expenseId,
+        updates,
+        { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ success: true, message: "Spesa modificata con successo!" })
 }
