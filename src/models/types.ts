@@ -90,18 +90,18 @@ export const ExpenseInputZSchema = z.object({
   amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
   category: objectIdSchema, // Riferimento alla categoria
-  exchangeRateSnapshot: z.number().optional(), // Tasso al momento della spesa
-  convertedAmount: z.number().optional(), // Importo convertito in euro
+  exchangeRateSnapshot: z.number().optional(), // Tasso di cambio al momento della spesa (calcolato automaticamente)
+  convertedAmount: z.number().optional(), // Importo convertito in EUR (calcolato automaticamente)
 });
 
 // Schema per PATCH spesa (tutti i campi opzionali)
 export const ExpenseInputZSchemaForPatch = z.object({
-  title: z.string().trim().min(1).max(50).optional(),
-  description: z.string().max(100).optional(),
-  expenseDate: z.coerce.date().optional(),
-  amount: z.number().nonnegative().optional(),
-  currency: z.enum(codes).optional(),
-  category: objectIdSchema.optional(),
+  title: z.string().trim().min(1).max(50).optional(), // Titolo della spesa
+  description: z.string().max(100).optional(), // Descrizione opzionale
+  expenseDate: z.coerce.date().optional(), // Data della spesa
+  amount: z.number().nonnegative().optional(), // Importo
+  currency: z.enum(codes).optional(), // Codice valuta
+  category: objectIdSchema.optional(), // Riferimento alla categoria
 }).strict();
 
 // Schema spesa completo

@@ -76,10 +76,12 @@ const expenseSchema = new Schema<ExpenseDocument>({
         ref: 'Category',
         required: true
     },
+    // Tasso di cambio al momento della spesa (calcolato automaticamente)
     exchangeRateSnapshot: {
         type: Number,
         required: false
     },
+    // Importo convertito in EUR (calcolato automaticamente)
     convertedAmount: {
         type: Number,
         required: false
@@ -94,11 +96,13 @@ const expenseSchema = new Schema<ExpenseDocument>({
  * Memorizza i tassi di cambio per tutte le valute supportate
  */
 const currencyRateSchema = new Schema({
+    // Codice valuta
     code: {
         type: String,
         required: true,
         enum: codes
     },
+    // Valore del tasso di cambio
     value: {
         type: Number,
         required: true
@@ -106,12 +110,15 @@ const currencyRateSchema = new Schema({
 }, { _id: false });
 
 const exchangeRateSchema = new Schema<ExchangeRateDocument>({
+    // Metadati del tasso di cambio
     meta: {
+        // Data ultimo aggiornamento
         last_updated_at: {
             type: Date,
             required: true
         }
     },
+    // Mappa dei tassi di cambio per valuta
     data: {
         type: Map,
         of: currencyRateSchema,
