@@ -1,9 +1,15 @@
 import { Request, Response } from "express";
-import { CategoryInputZSchema, CategoryModel, TSuccess } from "../models";
+import { CategoryInputZSchema, CategoryModel, objectIdSchema, TSuccess } from "../models";
 
 export const getAllCategories = async (req: Request, res: Response) => {
     const categories = await CategoryModel.find().populate('parentCategory')
-    res.json(categories)
+    res.status(201).json(categories)
+}
+
+export const getCategoryById = async (req: Request, res: Response) => {
+    const categoryId = objectIdSchema.parse(req.params.id);
+    const category = await CategoryModel.findById(categoryId);
+    res.status(201).json(category);
 }
 
 export const addNewCategory = async (req: Request, res: Response<TSuccess>) => {
@@ -12,3 +18,8 @@ export const addNewCategory = async (req: Request, res: Response<TSuccess>) => {
     res.status(201).json({ success: true, message: 'Nuova Categoria aggiunta!' });
 }
 
+export const deleteCategory = async (req: Request, res: Response<TSuccess>) => {
+    const categoryId = objectIdSchema.parse(req.params.id);
+    await CategoryModel.deleteOne({ _id: categoryId });
+    res.status(201).json({ success: true, message: 'Categoria Eliminata con successo!' });
+}
