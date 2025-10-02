@@ -56,22 +56,19 @@ export const objectIdSchema = createObjectIdSchema();
 export const CategoryInputZSchema = z.object({
   name: z.string().trim().min(1).max(50), // Nome della categoria
   type: z.enum(['income', 'expense']), // Tipo: income o expense
-  description: z.string().optional(), // Descrizione opzionale
+  description: z.string().max(200).optional(), // Descrizione opzionale
   parentCategory: objectIdSchema.optional() // ID categoria padre
 });
 
 // Schema categoria completo
 export const CategoryZSchema = CategoryInputZSchema.extend({
-  createdAt: z.iso.datetime(), // Data creazione
-  updatedAt: z.iso.datetime() // Data aggiornamento
+  createdAt: z.date(), // Data creazione
+  updatedAt: z.date() // Data aggiornamento
 });
 
-export const CategoryInputZSchemaForPatch = z.object({
-  name: z.string().trim().min(1).max(50).optional(), // Nome della categoria
-  type: z.enum(['income', 'expense']).optional(), // Tipo: income o expense
-  description: z.string().optional(), // Descrizione opzionale
-  parentCategory: objectIdSchema.optional() // ID categoria padre
-}).strict();
+export const CategoryInputZSchemaForPatch = CategoryInputZSchema
+  .partial()
+  .strict();
 
 // Tipi TypeScript
 export type TCategory = z.infer<typeof CategoryZSchema>;
@@ -94,15 +91,11 @@ export const ExpenseInputZSchema = z.object({
   convertedAmount: z.number().optional(), // Importo convertito in EUR (calcolato automaticamente)
 });
 
-// Schema per PATCH spesa (tutti i campi opzionali)
-export const ExpenseInputZSchemaForPatch = z.object({
-  title: z.string().trim().min(1).max(50).optional(), // Titolo della spesa
-  description: z.string().max(100).optional(), // Descrizione opzionale
-  expenseDate: z.coerce.date().optional(), // Data della spesa
-  amount: z.number().nonnegative().optional(), // Importo
-  currency: z.enum(codes).optional(), // Codice valuta
-  category: objectIdSchema.optional(), // Riferimento alla categoria
-}).strict();
+// Schema per PATCH spesa (tutti i campi opzionali, esclusi exchangeRateSnapshot e convertedAmount)
+export const ExpenseInputZSchemaForPatch = ExpenseInputZSchema
+  .omit({ exchangeRateSnapshot: true, convertedAmount: true })
+  .partial()
+  .strict();
 
 // Schema spesa completo
 export const ExpenseZSchema = ExpenseInputZSchema.extend({

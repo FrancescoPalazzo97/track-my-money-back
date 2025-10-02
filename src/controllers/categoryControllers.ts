@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import { CategoryInputZSchema, CategoryModel, objectIdSchema, TSuccess, CategoryInputZSchemaForPatch } from "../models";
 
 export const getAllCategories = async (req: Request, res: Response) => {
-    const categories = await CategoryModel.find().populate('parentCategory')
+    const categories = await CategoryModel.find().populate({
+        path: 'parentCategory',
+        select: 'name type'
+    })
     res.status(201).json(categories)
 }
 
