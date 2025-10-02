@@ -8,6 +8,14 @@ export const getExpenses = async (req: Request, res: Response) => {
     res.status(201).json(expenses)
 };
 
+export const getExpensesById = async (req: Request, res: Response) => {
+    const expenseId = objectIdSchema.parse(req.params.id);
+
+    const expense = await ExpenseModel.findById(expenseId);
+
+    res.status(201).json(expense);
+}
+
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     const result = ExpenseInputZSchema.parse(req.body);
 
