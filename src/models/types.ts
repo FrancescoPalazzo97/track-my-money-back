@@ -64,7 +64,14 @@ export const CategoryInputZSchema = z.object({
 export const CategoryZSchema = CategoryInputZSchema.extend({
   createdAt: z.iso.datetime(), // Data creazione
   updatedAt: z.iso.datetime() // Data aggiornamento
-})
+});
+
+export const CategoryInputZSchemaForPatch = z.object({
+  name: z.string().trim().min(1).max(50).optional(), // Nome della categoria
+  type: z.enum(['income', 'expense']).optional(), // Tipo: income o expense
+  description: z.string().optional(), // Descrizione opzionale
+  parentCategory: objectIdSchema.optional() // ID categoria padre
+}).strict();
 
 // Tipi TypeScript
 export type TCategory = z.infer<typeof CategoryZSchema>;
