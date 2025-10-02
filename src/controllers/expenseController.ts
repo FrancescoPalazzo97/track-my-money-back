@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
 import dayjs from "dayjs";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema } from "../models";
+import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch } from "../models";
 import { round } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
     const expenses = await ExpenseModel.find().populate('category');
     res.status(201).json(expenses)
+};
+
+export const getExpensesById = async (req: Request, res: Response) => {
+    const expenseId = objectIdSchema.parse(req.params.id);
+
+    const expense = await ExpenseModel.findById(expenseId);
+
+    res.status(201).json(expense);
 };
 
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
@@ -46,8 +54,19 @@ export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
 
 export const deleteExpense = async (req: Request, res: Response<TSuccess>) => {
     const expenseId = objectIdSchema.parse(req.params.id);
-
-    await ExpenseModel.deleteOne({ _id: expenseId });
-
+    const opereationResult = await ExpenseModel.deleteOne({ _id: expenseId });
+    if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la spesa non è stata trovata!');
     res.status(200).json({ success: true, message: "Spesa eliminata con successo" });
+};
+
+export const modifyExpense = async (req: Request, res: Response<TSuccess>) => {
+    const expenseId = objectIdSchema.parse(req.params.id);
+    const updates = ExpenseInputZSchemaForPatch.parse(req.body);
+    const opereationResult = await ExpenseModel.findByIdAndUpdate(
+        expenseId,
+        updates,
+        { new: true, runValidators: true }
+    );
+    if (!opereationResult) throw new Error('Impossibile modificare la spesa non è stata trovata!');
+    res.status(200).json({ success: true, message: "Spesa modificata con successo!" })
 }
