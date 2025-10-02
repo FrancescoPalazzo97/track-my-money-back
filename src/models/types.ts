@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Document, Types } from "mongoose";
 import z from "zod";
 
@@ -51,7 +50,7 @@ const createObjectIdSchema = () => z
     typeof val === 'string' ? new Types.ObjectId(val) : val
   );
 
-const objectIdSchema = createObjectIdSchema();
+export const objectIdSchema = createObjectIdSchema();
 
 // Schema per input categoria
 export const CategoryInputZSchema = z.object({
@@ -65,7 +64,14 @@ export const CategoryInputZSchema = z.object({
 export const CategoryZSchema = CategoryInputZSchema.extend({
   createdAt: z.iso.datetime(), // Data creazione
   updatedAt: z.iso.datetime() // Data aggiornamento
-})
+});
+
+export const CategoryInputZSchemaForPatch = z.object({
+  name: z.string().trim().min(1).max(50).optional(), // Nome della categoria
+  type: z.enum(['income', 'expense']).optional(), // Tipo: income o expense
+  description: z.string().optional(), // Descrizione opzionale
+  parentCategory: objectIdSchema.optional() // ID categoria padre
+}).strict();
 
 // Tipi TypeScript
 export type TCategory = z.infer<typeof CategoryZSchema>;
@@ -80,11 +86,23 @@ export type CategoryDocument = TCategory & Document;
 export const ExpenseInputZSchema = z.object({
   title: z.string().trim().min(1).max(50), // Titolo della spesa
   description: z.string().max(100).optional(), // Descrizione opzionale
-  expenseDate: z.date().optional(), // Data della spesa
+  expenseDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
   amount: z.number().nonnegative(), // Importo
   currency: z.enum(codes), // Codice valuta
-  category: objectIdSchema // Riferimento alla categoria
+  category: objectIdSchema, // Riferimento alla categoria
+  exchangeRateSnapshot: z.number().optional(), // Tasso al momento della spesa
+  convertedAmount: z.number().optional(), // Importo convertito in euro
 });
+
+// Schema per PATCH spesa (tutti i campi opzionali)
+export const ExpenseInputZSchemaForPatch = z.object({
+  title: z.string().trim().min(1).max(50).optional(),
+  description: z.string().max(100).optional(),
+  expenseDate: z.coerce.date().optional(),
+  amount: z.number().nonnegative().optional(),
+  currency: z.enum(codes).optional(),
+  category: objectIdSchema.optional(),
+}).strict();
 
 // Schema spesa completo
 export const ExpenseZSchema = ExpenseInputZSchema.extend({
@@ -96,6 +114,7 @@ export const ExpenseZSchema = ExpenseInputZSchema.extend({
 // Tipi TypeScript
 export type TExpense = z.infer<typeof ExpenseZSchema>;
 export type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
+export type TExpenseInputForPatch = z.infer<typeof ExpenseInputZSchemaForPatch>;
 export type ExpenseDocument = TExpense & Document;
 
 /**
@@ -128,7 +147,7 @@ export const ExchangeRateMetaSchema = z.object({
 // Schema per la risposta completa dell'API exchange rate
 export const ExchangeRateResponseSchema = z.object({
   meta: ExchangeRateMetaSchema, // Metadati
-  data: z.record(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
+  data: z.map(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
 });
 
 // Tipi TypeScript

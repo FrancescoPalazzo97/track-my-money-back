@@ -75,6 +75,14 @@ const expenseSchema = new Schema<ExpenseDocument>({
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: true
+    },
+    exchangeRateSnapshot: {
+        type: Number,
+        required: false
+    },
+    convertedAmount: {
+        type: Number,
+        required: false
     }
 }, {
     // Timestamp automatici
@@ -110,6 +118,8 @@ const exchangeRateSchema = new Schema<ExchangeRateDocument>({
         required: true
     }
 });
+
+exchangeRateSchema.index({ 'meta.last_updated_at': -1 });
 
 // Modelli Mongoose
 export const CategoryModel = model<CategoryDocument>('Category', categorySchema);
