@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import dayjs from "dayjs";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess } from "../models";
+import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema } from "../models";
 import { round } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
@@ -12,18 +12,15 @@ export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     const result = ExpenseInputZSchema.parse(req.body);
 
     const expenseDate = dayjs(result.expenseDate || new Date());
-    const queryDate = expenseDate.format('YYYY-MM-DD') + 'T23:59:59Z';
     const exchangeRate = await ExchangeRateModel.findOne({
         'meta.last_updated_at': {
-            $lte: queryDate
+            $lte: expenseDate.toDate()
         }
     }).sort({ 'meta.last_updated_at': -1 });
 
     if (!exchangeRate) {
         throw new Error('Tassi di cambio non disponibili per la data specificata!')
     };
-
-    console.log(exchangeRate.meta)
 
     const euroData = exchangeRate.data.get("EUR");
     if (!euroData) {
@@ -46,3 +43,11 @@ export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     await ExpenseModel.insertOne(result);
     res.status(201).json({ success: true, message: 'Spesa aggiunta!' });
 };
+
+export const deleteExpense = async (req: Request, res: Response<TSuccess>) => {
+    const expenseId = objectIdSchema.parse(req.params.id);
+
+    await ExpenseModel.deleteOne({ _id: expenseId });
+
+    res.status(200).json({ success: true, message: "Spesa eliminata con successo" });
+}

@@ -8,17 +8,25 @@ export default async function (dateString: string) {
     if (!date.isValid || date.isAfter(today) || date.isSame(today)) {
         return null;
     };
+    const targetDate = new Date(`${date.format('YYYY-MM-DD')}T23:59:59Z`);
     const foundData = await ExchangeRateModel.findOne({
-        'meta.last_updated_at': {
-            $regex: `^${date.format('YYYY-MM-DD')}`
-        }
+        'meta.last_updated_at': targetDate
     });
     if (foundData) {
-        return { ...foundData, inDB: true };
+        return { ...foundData.toObject(), inDB: true };
     };
     const { data } = await currencyClient<TExchangeRateResponse>('/historical', {
         params: { date: date.format('YYYY-MM-DD') }
     });
-    await ExchangeRateModel.insertOne(data);
-    return { ...data, inDB: false };
+
+    const dataToSave = {
+        ...data,
+        meta: {
+            ...data.meta,
+            last_updated_at: new Date(data.meta.last_updated_at)
+        }
+    };
+
+    await ExchangeRateModel.insertOne(dataToSave);
+    return { ...dataToSave, inDB: false };
 }

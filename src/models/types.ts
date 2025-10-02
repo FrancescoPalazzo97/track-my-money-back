@@ -51,7 +51,7 @@ const createObjectIdSchema = () => z
     typeof val === 'string' ? new Types.ObjectId(val) : val
   );
 
-const objectIdSchema = createObjectIdSchema();
+export const objectIdSchema = createObjectIdSchema();
 
 // Schema per input categoria
 export const CategoryInputZSchema = z.object({

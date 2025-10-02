@@ -108,7 +108,7 @@ const currencyRateSchema = new Schema({
 const exchangeRateSchema = new Schema<ExchangeRateDocument>({
     meta: {
         last_updated_at: {
-            type: String,
+            type: Date,
             required: true
         }
     },
