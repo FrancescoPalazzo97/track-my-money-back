@@ -176,3 +176,9 @@ export const ApiQuotasResponseSchema = z.object({
 export type TQuota = z.infer<typeof QuotaSchema>;
 export type TQuotas = z.infer<typeof QuotasSchema>;
 export type TApiQuotasResponse = z.infer<typeof ApiQuotasResponseSchema>;
+
+export const GetExpensesQueryZSchema = z.object({
+  startDate: z.string(),
+  endDate: z.string(),
+  currency: z.enum(codes)
+}).strict();

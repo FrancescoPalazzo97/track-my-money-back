@@ -1,11 +1,19 @@
 import { Request, Response } from "express";
-import dayjs from "dayjs";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch } from "../models";
-import { round } from "../lib/utility";
+import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema, ExpenseDocument } from "../models";
+import { convertExpenses, round, validateDate } from "../lib/utility";
+import { HydratedDocument } from "mongoose";
 
 export const getExpenses = async (req: Request, res: Response) => {
-    const expenses = await ExpenseModel.find().populate('category');
-    res.status(201).json(expenses)
+    const { startDate, endDate, currency = 'EUR' } = GetExpensesQueryZSchema.parse(req.query);
+    const [start, end] = validateDate(startDate, endDate);
+    const expenses = await ExpenseModel.find({
+        expenseDate: {
+            $gte: start,
+            $lte: end
+        }
+    }).populate('category');
+    const convertedExpenses = convertExpenses(expenses);
+    res.status(201).json(expenses);
 };
 
 export const getExpensesById = async (req: Request, res: Response) => {
@@ -19,10 +27,11 @@ export const getExpensesById = async (req: Request, res: Response) => {
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     const result = ExpenseInputZSchema.parse(req.body);
 
-    const expenseDate = dayjs(result.expenseDate || new Date());
+    const expenseDate = result.expenseDate || new Date();
+    console.log(expenseDate)
     const exchangeRate = await ExchangeRateModel.findOne({
         'meta.last_updated_at': {
-            $lte: expenseDate.toDate()
+            $lte: expenseDate
         }
     }).sort({ 'meta.last_updated_at': -1 });
 
