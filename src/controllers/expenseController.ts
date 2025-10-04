@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
 import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema, ExpenseDocument } from "../models";
 import { convertExpenses, round, validateDate } from "../lib/utility";
-import { HydratedDocument } from "mongoose";
 
 export const getExpenses = async (req: Request, res: Response) => {
-    const { startDate, endDate, currency = 'EUR' } = GetExpensesQueryZSchema.parse(req.query);
+    const { startDate, endDate, baseCurrency = 'EUR' } = GetExpensesQueryZSchema.parse(req.query);
     const [start, end] = validateDate(startDate, endDate);
     const expenses = await ExpenseModel.find({
         expenseDate: {
@@ -12,8 +11,8 @@ export const getExpenses = async (req: Request, res: Response) => {
             $lte: end
         }
     }).populate('category');
-    const convertedExpenses = convertExpenses(expenses);
-    res.status(201).json(expenses);
+    const convertedExpenses = await convertExpenses(expenses, baseCurrency);
+    res.status(201).json(convertedExpenses);
 };
 
 export const getExpensesById = async (req: Request, res: Response) => {
@@ -26,37 +25,6 @@ export const getExpensesById = async (req: Request, res: Response) => {
 
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {
     const result = ExpenseInputZSchema.parse(req.body);
-
-    const expenseDate = result.expenseDate || new Date();
-    console.log(expenseDate)
-    const exchangeRate = await ExchangeRateModel.findOne({
-        'meta.last_updated_at': {
-            $lte: expenseDate
-        }
-    }).sort({ 'meta.last_updated_at': -1 });
-
-    if (!exchangeRate) {
-        throw new Error('Tassi di cambio non disponibili per la data specificata!')
-    };
-
-    const euroData = exchangeRate.data.get("EUR");
-    if (!euroData) {
-        throw new Error('Tasso EUR non trovato!!');
-    };
-
-    if (result.currency === 'EUR') {
-        result.convertedAmount = result.amount;
-        result.exchangeRateSnapshot = 1;
-    } else {
-        const currencyData = exchangeRate.data.get(result.currency);
-        if (!currencyData) {
-            throw new Error(`Tasso di cambio per ${result.currency} non trovato!`);
-        };
-        const rateToEuro = euroData.value / currencyData.value;
-        result.exchangeRateSnapshot = rateToEuro;
-        result.convertedAmount = round(result.amount * rateToEuro, 2);
-    }
-
     await ExpenseModel.insertOne(result);
     res.status(201).json({ success: true, message: 'Spesa aggiunta!' });
 };

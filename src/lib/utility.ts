@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { ExpenseDocument } from "../models";
+import { ExchangeRateModel, ExpenseDocument, TCodes } from "../models";
 import { HydratedDocument } from "mongoose";
 
 export function round(num: number, decimali: number) {
@@ -19,10 +19,23 @@ export function validateDate(startDate: string, endDate: string) {
 
 type TExpenses = HydratedDocument<ExpenseDocument>[]
 
-export async function convertExpenses(expenses: TExpenses): Promise<TExpenses> {
+export async function convertExpenses(expenses: TExpenses, baseCurrency: TCodes): Promise<TExpenses> {
     for (const exp of expenses) {
         if (exp.currency !== "EUR") {
+            const exchangeRate = await ExchangeRateModel.findOne({
+                'meta.last_updated_at': {
+                    $lte: exp.expenseDate
+                }
+            }).sort({ 'meta.last_updated_at': -1 });;
 
+            if (!exchangeRate) throw new Error('Exchange rate non trovato');
+            const currencyData = exchangeRate.data.get(baseCurrency)
+                ?? (() => { throw new Error(`La valuta ${baseCurrency} non è stata trovata!`) })();
+            const expenseCurrencyData = exchangeRate.data.get(exp.currency)
+                ?? (() => { throw new Error(`La valuta EUR non è stata trovata!`) })();
+
+            const amountInEUR = (exp.amount / expenseCurrencyData.value) * currencyData.value;
+            exp.amount = round(amountInEUR, 2);
         }
     }
     return expenses;

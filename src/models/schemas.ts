@@ -75,16 +75,6 @@ const expenseSchema = new Schema<ExpenseDocument>({
         type: Schema.Types.ObjectId,
         ref: 'Category',
         required: true
-    },
-    // Tasso di cambio al momento della spesa (calcolato automaticamente)
-    exchangeRateSnapshot: {
-        type: Number,
-        required: false
-    },
-    // Importo convertito in EUR (calcolato automaticamente)
-    convertedAmount: {
-        type: Number,
-        required: false
     }
 }, {
     // Timestamp automatici

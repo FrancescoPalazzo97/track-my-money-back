@@ -34,6 +34,8 @@ export const codes = [
   'ZAR', 'ZMK', 'ZMW', 'ZWG', 'ZWL'
 ] as const;
 
+export const CodesSchema = z.enum(codes);
+export type TCodes = z.infer<typeof CodesSchema>;
 /**
  * SCHEMI E TIPI PER LE CATEGORIE
  */
@@ -85,15 +87,12 @@ export const ExpenseInputZSchema = z.object({
   description: z.string().max(100).optional(), // Descrizione opzionale
   expenseDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
   amount: z.number().nonnegative(), // Importo
-  currency: z.enum(codes), // Codice valuta
+  currency: CodesSchema, // Codice valuta
   category: objectIdSchema, // Riferimento alla categoria
-  exchangeRateSnapshot: z.number().optional(), // Tasso di cambio al momento della spesa (calcolato automaticamente)
-  convertedAmount: z.number().optional(), // Importo convertito in EUR (calcolato automaticamente)
 });
 
 // Schema per PATCH spesa (tutti i campi opzionali, esclusi exchangeRateSnapshot e convertedAmount)
 export const ExpenseInputZSchemaForPatch = ExpenseInputZSchema
-  .omit({ exchangeRateSnapshot: true, convertedAmount: true })
   .partial()
   .strict();
 
@@ -180,5 +179,5 @@ export type TApiQuotasResponse = z.infer<typeof ApiQuotasResponseSchema>;
 export const GetExpensesQueryZSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
-  currency: z.enum(codes)
+  baseCurrency: z.enum(codes)
 }).strict();
