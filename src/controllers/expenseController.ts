@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema, ExpenseDocument } from "../models";
+import { ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema } from "../models";
 import { convertExpenses, createSlug, validateDate } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
