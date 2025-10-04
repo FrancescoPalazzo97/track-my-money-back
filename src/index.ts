@@ -5,11 +5,16 @@ import expenseRoute from './routers/expenseRouter';
 import { errorsHandler } from './middlewares/errorsHandler';
 import z from "zod";
 import { it } from "zod/locales";
+import cors from 'cors';
 
 z.config(it());
 
 const app = express();
 const port = process.env.PORT || '3000';
+
+app.use(cors({
+    origin: '*'
+}))
 
 app.use(express.json());
 
