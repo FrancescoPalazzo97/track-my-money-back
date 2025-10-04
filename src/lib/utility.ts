@@ -28,11 +28,11 @@ export async function convertExpenses(expenses: TExpenses, baseCurrency: TCodes)
                 }
             }).sort({ 'meta.last_updated_at': -1 });;
 
-            if (!exchangeRate) throw new Error('Exchange rate non trovato');
+            if (!exchangeRate) throw new Error(`Exchange rate per la data ${dayjs(exp.expenseDate).format('DD-MM-YYYY')} non trovato`);
             const currencyData = exchangeRate.data.get(baseCurrency)
                 ?? (() => { throw new Error(`La valuta ${baseCurrency} non è stata trovata!`) })();
             const expenseCurrencyData = exchangeRate.data.get(exp.currency)
-                ?? (() => { throw new Error(`La valuta EUR non è stata trovata!`) })();
+                ?? (() => { throw new Error(`La valuta ${exp.currency} non è stata trovata!`) })();
 
             const amountInEUR = (exp.amount / expenseCurrencyData.value) * currencyData.value;
             exp.amount = round(amountInEUR, 2);
