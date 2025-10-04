@@ -163,7 +163,17 @@ Elimina una categoria.
 ### Spese
 
 #### GET /expense
-Recupera tutte le spese con popolamento delle categorie associate.
+Recupera tutte le spese con popolamento delle categorie associate e conversione valutaria dinamica.
+
+**Query Parameters:**
+- `startDate` (obbligatorio): Data inizio periodo (formato ISO 8601)
+- `endDate` (obbligatorio): Data fine periodo (formato ISO 8601)
+- `baseCurrency` (opzionale): Valuta di conversione (default: EUR)
+
+**Esempio richiesta:**
+```
+GET /expense?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
+```
 
 **Risposta:**
 ```json
@@ -180,13 +190,17 @@ Recupera tutte le spese con popolamento delle categorie associate.
       "name": "Alimentari",
       "type": "expense"
     },
-    "exchangeRateSnapshot": 1,
-    "convertedAmount": 50.00,
+    "slug": "spesa-al-supermercato",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
 ]
 ```
+
+**Note:**
+- Gli importi vengono convertiti automaticamente nella valuta base specificata
+- Il campo `slug` viene generato automaticamente dal titolo della spesa
+- La conversione usa i tassi di cambio storici alla data della spesa
 
 #### GET /expense/:id
 Recupera una spesa specifica per ID.
@@ -201,15 +215,13 @@ Recupera una spesa specifica per ID.
   "amount": 50.00,
   "currency": "EUR",
   "category": "507f1f77bcf86cd799439011",
-  "exchangeRateSnapshot": 1,
-  "convertedAmount": 50.00,
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
 #### POST /expense
-Crea una nuova spesa. Il sistema calcola automaticamente `exchangeRateSnapshot` e `convertedAmount` in base ai tassi di cambio storici.
+Crea una nuova spesa.
 
 **Body:**
 ```json
@@ -233,8 +245,8 @@ Crea una nuova spesa. Il sistema calcola automaticamente `exchangeRateSnapshot` 
 
 **Note:**
 - Il campo `expenseDate` è opzionale e usa la data corrente se non specificato
-- `exchangeRateSnapshot` e `convertedAmount` sono calcolati automaticamente dal sistema
-- La conversione usa il tasso di cambio più recente disponibile alla data della spesa
+- Le spese vengono salvate nella valuta originale
+- La conversione valutaria avviene dinamicamente durante il recupero dati (GET)
 
 #### PATCH /expense/:id
 Modifica una spesa esistente. Tutti i campi sono opzionali.
@@ -254,8 +266,6 @@ Modifica una spesa esistente. Tutti i campi sono opzionali.
   "message": "Spesa modificata con successo!"
 }
 ```
-
-**Nota:** Non è possibile modificare `exchangeRateSnapshot` e `convertedAmount` tramite PATCH.
 
 #### DELETE /expense/:id
 Elimina una spesa.
@@ -282,13 +292,15 @@ Elimina una spesa.
 - `title`: Titolo della spesa (1-50 caratteri)
 - `description`: Descrizione opzionale (max 100 caratteri)
 - `expenseDate`: Data della spesa (default: data corrente)
-- `amount`: Importo (numero positivo)
+- `amount`: Importo nella valuta originale (numero positivo)
 - `currency`: Codice valuta (enum con 120+ valute: ISO 4217 + criptovalute)
 - `category`: Riferimento alla categoria (obbligatorio, ObjectId)
-- `exchangeRateSnapshot`: Tasso di cambio al momento della spesa (calcolato automaticamente)
-- `convertedAmount`: Importo convertito in EUR (calcolato automaticamente)
 - `createdAt`: Data di creazione (automatica)
 - `updatedAt`: Data di aggiornamento (automatica)
+
+**Campi calcolati dinamicamente (solo in GET /expense):**
+- `slug`: URL-friendly version del titolo (generato automaticamente)
+- Conversione importo nella valuta base richiesta (modifica il campo `amount`)
 
 ### ExchangeRate
 - `meta.last_updated_at`: Data ultimo aggiornamento dei tassi
@@ -322,7 +334,8 @@ src/
 - **Error handling centralizzato**: Tutti gli errori (Zod, standard, sconosciuti) vengono gestiti dal middleware in `src/middlewares/errorsHandler.ts`.
 - **Popolamento relazioni**: Le query usano `.populate()` di Mongoose per includere automaticamente i dati delle relazioni (es. categoria padre, categoria della spesa).
 - **Graceful shutdown**: Il server gestisce SIGINT e SIGTERM per disconnettersi correttamente da MongoDB prima di terminare.
-- **Conversione automatica valute**: Quando si crea una spesa, il sistema calcola automaticamente `exchangeRateSnapshot` e `convertedAmount` usando i tassi di cambio storici dal database. La formula di conversione è: `euroData.value / currencyData.value`.
+- **Conversione dinamica valute**: La conversione valutaria avviene durante il recupero delle spese (GET /expense) tramite la funzione `convertExpenses()` in `src/lib/utility.ts`. La formula di conversione è: `(amount / expenseCurrencyData.value) * baseCurrencyData.value`, usando i tassi di cambio storici più recenti disponibili alla data della spesa.
+- **Generazione slug**: Il campo `slug` viene generato automaticamente dal titolo della spesa durante il recupero (GET /expense) tramite la funzione `createSlug()` in `src/lib/utility.ts`.
 
 ## 🔧 Stack Tecnologico
 
