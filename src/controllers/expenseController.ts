@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { ExchangeRateModel, ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema, ExpenseDocument } from "../models";
-import { convertExpenses, round, validateDate } from "../lib/utility";
+import { ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema, ExpenseDocument } from "../models";
+import { convertExpenses, createSlug, validateDate } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetExpensesQueryZSchema.parse(req.query);
@@ -10,16 +10,18 @@ export const getExpenses = async (req: Request, res: Response) => {
             $gte: start,
             $lte: end
         }
-    }).populate('category');
+    }).populate('category').lean();
     const convertedExpenses = await convertExpenses(expenses, baseCurrency);
-    res.status(201).json(convertedExpenses);
+    const convertedNSlugged = convertedExpenses.map(exp => {
+        const slug = createSlug(exp.title)
+        return { ...exp, slug }
+    })
+    res.status(201).json(convertedNSlugged);
 };
 
 export const getExpensesById = async (req: Request, res: Response) => {
     const expenseId = objectIdSchema.parse(req.params.id);
-
     const expense = await ExpenseModel.findById(expenseId);
-
     res.status(201).json(expense);
 };
 

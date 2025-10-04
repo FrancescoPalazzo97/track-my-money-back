@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { ExchangeRateModel, ExpenseDocument, TCodes } from "../models";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, FlattenMaps } from "mongoose";
 
 export function round(num: number, decimali: number) {
     return Math.round(num * Math.pow(10, decimali)) / Math.pow(10, decimali);
@@ -17,9 +17,11 @@ export function validateDate(startDate: string, endDate: string) {
     return [new Date(startDate), new Date(endDate)]
 }
 
-type TExpenses = HydratedDocument<ExpenseDocument>[]
+type TExpense =
+    | HydratedDocument<ExpenseDocument>
+    | (FlattenMaps<ExpenseDocument> & { _id: any, __v: number });
 
-export async function convertExpenses(expenses: TExpenses, baseCurrency: TCodes): Promise<TExpenses> {
+export async function convertExpenses(expenses: TExpense[], baseCurrency: TCodes): Promise<TExpense[]> {
     for (const exp of expenses) {
         if (exp.currency !== "EUR") {
             const exchangeRate = await ExchangeRateModel.findOne({
@@ -39,4 +41,12 @@ export async function convertExpenses(expenses: TExpenses, baseCurrency: TCodes)
         }
     }
     return expenses;
+}
+
+export function createSlug(string: string): string {
+    return string
+        .split(' ').
+        filter(item => item !== '')
+        .map(w => w.toLowerCase())
+        .join('-');
 }
