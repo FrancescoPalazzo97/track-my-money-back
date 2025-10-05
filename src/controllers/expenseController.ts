@@ -1,6 +1,14 @@
 import { Request, Response } from "express";
-import { ExpenseInputZSchema, ExpenseModel, TSuccess, objectIdSchema, ExpenseInputZSchemaForPatch, GetExpensesQueryZSchema } from "../models";
-import { convertExpenses, createSlug, validateDate } from "../lib/utility";
+import {
+    ExpenseInputZSchema,
+    ExpenseModel,
+    TSuccess,
+    objectIdSchema,
+    ExpenseInputZSchemaForPatch,
+    GetExpensesQueryZSchema,
+    TGetExpense
+} from "../models";
+import { convertExpense, validateDate } from "../lib/utility";
 
 export const getExpenses = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetExpensesQueryZSchema.parse(req.query);
@@ -10,19 +18,26 @@ export const getExpenses = async (req: Request, res: Response) => {
             $gte: start,
             $lte: end
         }
-    }).populate('category').lean();
-    const convertedExpenses = await convertExpenses(expenses, baseCurrency);
-    const convertedNSlugged = convertedExpenses.map(exp => {
-        const slug = createSlug(exp.title)
-        return { ...exp, slug }
-    })
-    res.status(201).json(convertedNSlugged);
+    }).populate('category', '_id').lean();
+    let convertedExpenses: TGetExpense[] = [];
+    for (const exp of expenses) {
+        const convertedExpense = await convertExpense(exp, baseCurrency);
+        convertedExpenses.push(convertedExpense)
+    }
+    res.status(201).json(convertedExpenses);
 };
+
+const CurrencySchema = GetExpensesQueryZSchema.omit({ startDate: true, endDate: true })
 
 export const getExpensesById = async (req: Request, res: Response) => {
     const expenseId = objectIdSchema.parse(req.params.id);
-    const expense = await ExpenseModel.findById(expenseId);
-    res.status(201).json(expense);
+    const { baseCurrency = "EUR" } = CurrencySchema.parse(req.query);
+    const expense = await ExpenseModel.findById(expenseId).lean();
+    if (!expense) {
+        throw new Error(`Spesa con ID: ${expenseId} non trovata!`);
+    };
+    const convertedExpense: TGetExpense = await convertExpense(expense, baseCurrency)
+    res.status(201).json(convertedExpense);
 };
 
 export const addNewExpense = async (req: Request, res: Response<TSuccess>) => {

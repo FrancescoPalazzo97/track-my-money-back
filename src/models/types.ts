@@ -34,7 +34,7 @@ export const codes = [
   'ZAR', 'ZMK', 'ZMW', 'ZWG', 'ZWL'
 ] as const;
 
-export const CodesSchema = z.enum(codes);
+const CodesSchema = z.enum(codes);
 export type TCodes = z.infer<typeof CodesSchema>;
 /**
  * SCHEMI E TIPI PER LE CATEGORIE
@@ -63,7 +63,7 @@ export const CategoryInputZSchema = z.object({
 });
 
 // Schema categoria completo
-export const CategoryZSchema = CategoryInputZSchema.extend({
+const CategoryZSchema = CategoryInputZSchema.extend({
   createdAt: z.date(), // Data creazione
   updatedAt: z.date() // Data aggiornamento
 });
@@ -73,8 +73,8 @@ export const CategoryInputZSchemaForPatch = CategoryInputZSchema
   .strict();
 
 // Tipi TypeScript
-export type TCategory = z.infer<typeof CategoryZSchema>;
-export type TCategoryInput = z.infer<typeof CategoryInputZSchema>;
+type TCategory = z.infer<typeof CategoryZSchema>;
+type TCategoryInput = z.infer<typeof CategoryInputZSchema>;
 export type CategoryDocument = TCategory & Document;
 
 /**
@@ -97,16 +97,17 @@ export const ExpenseInputZSchemaForPatch = ExpenseInputZSchema
   .strict();
 
 // Schema spesa completo
-export const ExpenseZSchema = ExpenseInputZSchema.extend({
+const ExpenseZSchema = ExpenseInputZSchema.extend({
   expenseDate: z.date(), // Data della spesa
   createdAt: z.date(), // Data creazione
   updatedAt: z.date() // Data aggiornamento
 });
 
 // Tipi TypeScript
-export type TExpense = z.infer<typeof ExpenseZSchema>;
-export type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
-export type TExpenseInputForPatch = z.infer<typeof ExpenseInputZSchemaForPatch>;
+type TExpense = z.infer<typeof ExpenseZSchema>;
+export type TGetExpense = TExpense & { amountInEUR: number };
+type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
+type TExpenseInputForPatch = z.infer<typeof ExpenseInputZSchemaForPatch>;
 export type ExpenseDocument = TExpense & Document;
 
 /**
@@ -114,7 +115,7 @@ export type ExpenseDocument = TExpense & Document;
  */
 
 // Schema per messaggi di successo
-export const SuccessSchema = z.object({
+const SuccessSchema = z.object({
   success: z.boolean(), // Successo operazione
   message: z.string() // Messaggio descrittivo
 });
@@ -126,25 +127,25 @@ export type TSuccess = z.infer<typeof SuccessSchema>;
  */
 
 // Schema per una singola valuta
-export const CurrencyRateSchema = z.object({
+const CurrencyRateSchema = z.object({
   code: z.enum(codes), // Codice valuta
   value: z.number() // Valore di cambio
 });
 
 // Schema per i metadati della risposta
-export const ExchangeRateMetaSchema = z.object({
+const ExchangeRateMetaSchema = z.object({
   last_updated_at: z.date() // Data ultimo aggiornamento
 });
 
 // Schema per la risposta completa dell'API exchange rate
-export const ExchangeRateResponseSchema = z.object({
+const ExchangeRateResponseSchema = z.object({
   meta: ExchangeRateMetaSchema, // Metadati
   data: z.map(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
 });
 
 // Tipi TypeScript
-export type TCurrencyRate = z.infer<typeof CurrencyRateSchema>;
-export type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaSchema>;
+type TCurrencyRate = z.infer<typeof CurrencyRateSchema>;
+type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaSchema>;
 export type TExchangeRateResponse = z.infer<typeof ExchangeRateResponseSchema>;
 export type ExchangeRateDocument = TExchangeRateResponse & Document;
 
