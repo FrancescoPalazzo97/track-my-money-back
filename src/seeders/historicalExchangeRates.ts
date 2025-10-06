@@ -7,18 +7,18 @@ import { currencyClient } from "../lib/currencyClient";
     await connectToMongo();
 
     const { data } = await currencyClient('/status');
-    const totRequestRemainig = data.quotas.month.remaining - 50;
+    const totRequestRemainig = data.quotas.month.remaining;
 
-    const startDateString = process.argv[2];
-    const startDate = dayjs(startDateString);
-    const today = dayjs(dayjs().format('YYYY-MM-DD'));
+    // const startDateString = process.argv[2];
+    // const startDate = dayjs(startDateString);
+    const yesterday = dayjs(dayjs().subtract(1, "day").format('YYYY-MM-DD'));
 
-    if (!startDate.isValid() || startDate.isAfter(today) || startDate.isSame(today)) {
-        console.error('Data non valida!');
-        process.exit(1);
-    }
+    // if (!startDate.isValid() || startDate.isAfter(today) || startDate.isSame(today)) {
+    //     console.error('Data non valida!');
+    //     process.exit(1);
+    // }
 
-    let currentDate = dayjs(startDate.format('YYYY-MM-DD'));
+    let currentDate = dayjs(yesterday.format('YYYY-MM-DD'));
     let totUsedRequest = 0;
     let doneRequestPerMinute = 0;
 

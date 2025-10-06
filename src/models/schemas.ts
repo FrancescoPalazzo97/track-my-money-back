@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import type { CategoryDocument, ExpenseDocument, ExchangeRateDocument } from "./types";
+import type { CategoryDocument, TransactionDocument, ExchangeRateDocument } from "./types";
 import { codes } from "./types";
 
 /**
@@ -39,7 +39,7 @@ const categorySchema = new Schema<CategoryDocument>({
  * Schema Mongoose per le spese/entrate
  * Include informazioni su importo, valuta e categoria di appartenenza
  */
-const expenseSchema = new Schema<ExpenseDocument>({
+const TransactionSchema = new Schema<TransactionDocument>({
     // Titolo della spesa
     title: {
         type: String,
@@ -54,7 +54,7 @@ const expenseSchema = new Schema<ExpenseDocument>({
         maxlength: 100
     },
     // Data della spesa
-    expenseDate: {
+    transactionDate: {
         type: Date,
         default: Date.now
     },
@@ -120,5 +120,5 @@ exchangeRateSchema.index({ 'meta.last_updated_at': -1 });
 
 // Modelli Mongoose
 export const CategoryModel = model<CategoryDocument>('Category', categorySchema);
-export const ExpenseModel = model<ExpenseDocument>('Expense', expenseSchema);
+export const TransactionModel = model<TransactionDocument>('Transaction', TransactionSchema);
 export const ExchangeRateModel = model<ExchangeRateDocument>('ExchangeRate', exchangeRateSchema);

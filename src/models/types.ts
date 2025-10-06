@@ -82,33 +82,33 @@ export type CategoryDocument = TCategory & Document;
  */
 
 // Schema per input spesa
-export const ExpenseInputZSchema = z.object({
+export const TransactionInputZSchema = z.object({
   title: z.string().trim().min(1).max(50), // Titolo della spesa
   description: z.string().max(100).optional(), // Descrizione opzionale
-  expenseDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
+  transactionDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
   amount: z.number().nonnegative(), // Importo
   currency: CodesSchema, // Codice valuta
   category: objectIdSchema, // Riferimento alla categoria
 });
 
 // Schema per PATCH spesa (tutti i campi opzionali, esclusi exchangeRateSnapshot e convertedAmount)
-export const ExpenseInputZSchemaForPatch = ExpenseInputZSchema
+export const TransactionInputZSchemaForPatch = TransactionInputZSchema
   .partial()
   .strict();
 
 // Schema spesa completo
-const ExpenseZSchema = ExpenseInputZSchema.extend({
+const TransactionZSchema = TransactionInputZSchema.extend({
   expenseDate: z.date(), // Data della spesa
   createdAt: z.date(), // Data creazione
   updatedAt: z.date() // Data aggiornamento
 });
 
 // Tipi TypeScript
-type TExpense = z.infer<typeof ExpenseZSchema>;
-export type TGetExpense = TExpense & { amountInEUR: number };
-type TExpenseInput = z.infer<typeof ExpenseInputZSchema>;
-type TExpenseInputForPatch = z.infer<typeof ExpenseInputZSchemaForPatch>;
-export type ExpenseDocument = TExpense & Document;
+type TTransaction = z.infer<typeof TransactionZSchema>;
+export type TGetTransaction = TTransaction & { amountInEUR: number };
+type TTransactionInput = z.infer<typeof TransactionInputZSchema>;
+type TTransactionInputForPatch = z.infer<typeof TransactionInputZSchemaForPatch>;
+export type TransactionDocument = TTransaction & Document;
 
 /**
  * SCHEMI PER LE RISPOSTE API
@@ -177,7 +177,7 @@ export type TQuota = z.infer<typeof QuotaSchema>;
 export type TQuotas = z.infer<typeof QuotasSchema>;
 export type TApiQuotasResponse = z.infer<typeof ApiQuotasResponseSchema>;
 
-export const GetExpensesQueryZSchema = z.object({
+export const GetTransactionQueryZSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
   baseCurrency: z.enum(codes)

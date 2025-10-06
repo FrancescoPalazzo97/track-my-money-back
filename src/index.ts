@@ -1,7 +1,7 @@
 import express from "express";
 import { connectToMongo, disconnectToMongo } from "./db/connection";
 import categoryRoute from './routers/categoryRoute';
-import expenseRoute from './routers/expenseRouter';
+import transactionRoute from './routers/transactionRouter';
 import { errorsHandler } from './middlewares/errorsHandler';
 import z from "zod";
 import { it } from "zod/locales";
@@ -19,7 +19,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/categories', categoryRoute);
-app.use('/expense', expenseRoute);
+app.use('/transactions', transactionRoute);
 
 app.use('/', (req, res) => {
     res.send('Benvenuto in Track My Money!');

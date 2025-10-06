@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { ExchangeRateModel, ExpenseDocument, TCodes, TGetExpense } from "../models";
-import { HydratedDocument, FlattenMaps } from "mongoose";
+import { ExchangeRateModel, TransactionDocument, TCodes, TGetTransaction } from "../models";
+import { FlattenMaps } from "mongoose";
 
 export function round(num: number, decimali: number) {
     return Math.round(num * Math.pow(10, decimali)) / Math.pow(10, decimali);
@@ -17,28 +17,28 @@ export function validateDate(startDate: string, endDate: string) {
     return [new Date(startDate), new Date(endDate)];
 };
 
-type TExpense = (FlattenMaps<ExpenseDocument> & { _id: any, __v: number });
+type TTransaction = (FlattenMaps<TransactionDocument> & { _id: any, __v: number });
 
-export async function convertExpense(expense: TExpense, baseCurrency: TCodes): Promise<TGetExpense> {
-    const newExpense = { ...expense, amountInEUR: expense.amount };
-    if (expense.currency !== "EUR") {
+export async function convertTransaction(transaction: TTransaction, baseCurrency: TCodes): Promise<TGetTransaction> {
+    const newTransaction = { ...transaction, amountInEUR: transaction.amount };
+    if (transaction.currency !== "EUR") {
         const exchangeRate = await ExchangeRateModel.findOne({
             'meta.last_updated_at': {
-                $lte: expense.expenseDate
+                $lte: transaction.expenseDate
             }
         }).sort({ 'meta.last_updated_at': -1 });
 
         if (!exchangeRate) {
-            throw new Error(`Exchange rate per la data ${dayjs(expense.expenseDate).format('DD-MM-YYYY')} non trovato`)
+            throw new Error(`Exchange rate per la data ${dayjs(transaction.expenseDate).format('DD-MM-YYYY')} non trovato`)
         };
 
         const currencyData = exchangeRate.data.get(baseCurrency)
             ?? (() => { throw new Error(`La valuta ${baseCurrency} non è stata trovata!`) })();
-        const expenseCurrencyData = exchangeRate.data.get(expense.currency)
-            ?? (() => { throw new Error(`La valuta ${expense.currency} non è stata trovata!`) })();
+        const transactionCurrencyData = exchangeRate.data.get(transaction.currency)
+            ?? (() => { throw new Error(`La valuta ${transaction.currency} non è stata trovata!`) })();
 
-        const amountInEUR = round((expense.amount / expenseCurrencyData.value) * currencyData.value, 2);
-        newExpense.amountInEUR = amountInEUR;
+        const amountInEUR = round((transaction.amount / transactionCurrencyData.value) * currencyData.value, 2);
+        newTransaction.amountInEUR = amountInEUR;
     };
-    return newExpense;
+    return newTransaction;
 };
