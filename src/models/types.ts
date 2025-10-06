@@ -98,7 +98,7 @@ export const TransactionInputZSchemaForPatch = TransactionInputZSchema
 
 // Schema spesa completo
 const TransactionZSchema = TransactionInputZSchema.extend({
-  expenseDate: z.date(), // Data della spesa
+  transactionDate: z.date(), // Data della spesa
   createdAt: z.date(), // Data creazione
   updatedAt: z.date() // Data aggiornamento
 });

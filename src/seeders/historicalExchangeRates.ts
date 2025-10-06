@@ -30,7 +30,7 @@ import { currencyClient } from "../lib/currencyClient";
         if (!histirocalRates.inDB) {
             doneRequestPerMinute++;
             totUsedRequest++;
-            if (doneRequestPerMinute === 10) {
+            if (doneRequestPerMinute === 1) {
                 console.log('Ho eseguito 10 richieste quindi aspetto 60 secondi!');
                 for (let i = 0; i < 60; i++) {
                     await new Promise(resolve => setTimeout(resolve, 1000));

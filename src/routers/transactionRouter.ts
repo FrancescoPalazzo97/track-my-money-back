@@ -1,8 +1,8 @@
 import express from "express";
-import { addNewTransaction, getTransaction, deleteTransaction, getTransactionById, modifyTransaction } from "../controllers/transactionController";
+import { addNewTransaction, getTransactions, deleteTransaction, getTransactionById, modifyTransaction } from "../controllers/transactionController";
 const router = express.Router();
 
-router.get('/', getTransaction);
+router.get('/', getTransactions);
 
 router.get('/:id', getTransactionById)
 

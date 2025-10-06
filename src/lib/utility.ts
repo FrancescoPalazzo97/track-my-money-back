@@ -24,12 +24,12 @@ export async function convertTransaction(transaction: TTransaction, baseCurrency
     if (transaction.currency !== "EUR") {
         const exchangeRate = await ExchangeRateModel.findOne({
             'meta.last_updated_at': {
-                $lte: transaction.expenseDate
+                $lte: transaction.transactionDate
             }
         }).sort({ 'meta.last_updated_at': -1 });
 
         if (!exchangeRate) {
-            throw new Error(`Exchange rate per la data ${dayjs(transaction.expenseDate).format('DD-MM-YYYY')} non trovato`)
+            throw new Error(`Exchange rate per la data ${dayjs(transaction.transactionDate).format('DD-MM-YYYY')} non trovato`)
         };
 
         const currencyData = exchangeRate.data.get(baseCurrency)

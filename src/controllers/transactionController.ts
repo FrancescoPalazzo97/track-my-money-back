@@ -10,7 +10,7 @@ import {
 } from "../models";
 import { convertTransaction, validateDate } from "../lib/utility";
 
-export const getTransaction = async (req: Request, res: Response) => {
+export const getTransactions = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetTransactionQueryZSchema.parse(req.query);
     const [start, end] = validateDate(startDate, endDate);
     const transactions = await TransactionModel.find({
