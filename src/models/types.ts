@@ -140,7 +140,8 @@ const ExchangeRateMetaSchema = z.object({
 // Schema per la risposta completa dell'API exchange rate
 const ExchangeRateResponseSchema = z.object({
   meta: ExchangeRateMetaSchema, // Metadati
-  data: z.map(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
+  data: z.record(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
+    .transform((obj) => new Map(Object.entries(obj))) // Converte in Map per compatibilità con Mongoose
 });
 
 // Tipi TypeScript

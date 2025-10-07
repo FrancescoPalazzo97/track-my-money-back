@@ -81,6 +81,8 @@ const TransactionSchema = new Schema<TransactionDocument>({
     timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 });
 
+TransactionSchema.index({ 'transactionDate': -1 });
+
 /**
  * Schema Mongoose per i dati dei tassi di cambio
  * Memorizza i tassi di cambio per tutte le valute supportate

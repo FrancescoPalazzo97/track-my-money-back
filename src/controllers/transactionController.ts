@@ -18,7 +18,10 @@ export const getTransactions = async (req: Request, res: Response) => {
             $gte: start,
             $lte: end
         }
-    }).populate('category', '_id').lean();
+    })
+        .populate('category', '_id')
+        .lean()
+        .sort({ 'transactionDate': -1 });
     let convertedTransactions: TGetTransaction[] = [];
     for (const op of transactions) {
         const convertedTransaction = await convertTransaction(op, baseCurrency);
@@ -56,11 +59,11 @@ export const deleteTransaction = async (req: Request, res: Response<TSuccess>) =
 export const modifyTransaction = async (req: Request, res: Response<TSuccess>) => {
     const transactionId = objectIdSchema.parse(req.params.id);
     const updates = TransactionInputZSchemaForPatch.parse(req.body);
-    const opereationResult = await TransactionModel.findByIdAndUpdate(
+    const operationResult = await TransactionModel.findByIdAndUpdate(
         transactionId,
         updates,
         { new: true, runValidators: true }
     );
-    if (!opereationResult) throw new Error('Impossibile modificare la transazione non è stata trovata!');
+    if (!operationResult) throw new Error('Impossibile modificare la transazione non è stata trovata!');
     res.status(200).json({ success: true, message: "Transazione modificata con successo!" })
 }
