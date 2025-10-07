@@ -76,7 +76,15 @@ npm start
 ### Categorie
 
 #### GET /categories
-Recupera tutte le categorie con popolamento delle categorie parent.
+Recupera tutte le categorie.
+
+**Query Parameters:**
+- `group` (opzionale): Se impostato a `true`, restituisce le categorie in struttura gerarchica con sottocategorie
+
+**Esempio richiesta lista piatta:**
+```
+GET /categories
+```
 
 **Risposta:**
 ```json
@@ -89,6 +97,35 @@ Recupera tutte le categorie con popolamento delle categorie parent.
     "parentCategory": null,
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+**Esempio richiesta gerarchica:**
+```
+GET /categories?group=true
+```
+
+**Risposta:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "Alimentari",
+    "type": "expense",
+    "description": "Spese per cibo e bevande",
+    "parentCategory": null,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "subCategories": [
+      {
+        "_id": "507f1f77bcf86cd799439012",
+        "name": "Supermercato",
+        "type": "expense",
+        "parentCategory": "507f1f77bcf86cd799439011",
+        "subCategories": []
+      }
+    ]
   }
 ]
 ```
@@ -160,10 +197,10 @@ Elimina una categoria.
 }
 ```
 
-### Spese
+### Transazioni
 
-#### GET /expense
-Recupera tutte le spese con popolamento delle categorie associate e conversione valutaria dinamica.
+#### GET /transactions
+Recupera tutte le transazioni con popolamento delle categorie associate e conversione valutaria dinamica.
 
 **Query Parameters:**
 - `startDate` (obbligatorio): Data inizio periodo (formato ISO 8601)
@@ -172,7 +209,7 @@ Recupera tutte le spese con popolamento delle categorie associate e conversione 
 
 **Esempio richiesta:**
 ```
-GET /expense?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
+GET /transactions?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
 ```
 
 **Risposta:**
@@ -182,15 +219,13 @@ GET /expense?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
     "_id": "507f1f77bcf86cd799439012",
     "title": "Spesa al supermercato",
     "description": "Spesa settimanale",
-    "expenseDate": "2024-01-01T00:00:00.000Z",
+    "transactionDate": "2024-01-01T00:00:00.000Z",
     "amount": 50.00,
     "currency": "EUR",
+    "amountInEUR": 50.00,
     "category": {
-      "_id": "507f1f77bcf86cd799439011",
-      "name": "Alimentari",
-      "type": "expense"
+      "_id": "507f1f77bcf86cd799439011"
     },
-    "slug": "spesa-al-supermercato",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
@@ -199,11 +234,20 @@ GET /expense?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
 
 **Note:**
 - Gli importi vengono convertiti automaticamente nella valuta base specificata
-- Il campo `slug` viene generato automaticamente dal titolo della spesa
-- La conversione usa i tassi di cambio storici alla data della spesa
+- Il campo `amountInEUR` contiene l'importo convertito (il campo `amount` rimane nella valuta originale)
+- La conversione usa i tassi di cambio storici alla data della transazione
+- Se i tassi di cambio mancano per una data specifica, vengono scaricati automaticamente
 
-#### GET /expense/:id
-Recupera una spesa specifica per ID.
+#### GET /transactions/:id
+Recupera una transazione specifica per ID con conversione valutaria opzionale.
+
+**Query Parameters:**
+- `baseCurrency` (opzionale): Valuta di conversione (default: EUR)
+
+**Esempio richiesta:**
+```
+GET /transactions/507f1f77bcf86cd799439012?baseCurrency=USD
+```
 
 **Risposta:**
 ```json
@@ -211,24 +255,25 @@ Recupera una spesa specifica per ID.
   "_id": "507f1f77bcf86cd799439012",
   "title": "Spesa al supermercato",
   "description": "Spesa settimanale",
-  "expenseDate": "2024-01-01T00:00:00.000Z",
+  "transactionDate": "2024-01-01T00:00:00.000Z",
   "amount": 50.00,
   "currency": "EUR",
+  "amountInEUR": 54.25,
   "category": "507f1f77bcf86cd799439011",
   "createdAt": "2024-01-01T00:00:00.000Z",
   "updatedAt": "2024-01-01T00:00:00.000Z"
 }
 ```
 
-#### POST /expense
-Crea una nuova spesa.
+#### POST /transactions
+Crea una nuova transazione.
 
 **Body:**
 ```json
 {
   "title": "Spesa al supermercato",
   "description": "Spesa settimanale",
-  "expenseDate": "2024-01-01T00:00:00.000Z",
+  "transactionDate": "2024-01-01T00:00:00.000Z",
   "amount": 50.00,
   "currency": "EUR",
   "category": "507f1f77bcf86cd799439011"
@@ -239,17 +284,17 @@ Crea una nuova spesa.
 ```json
 {
   "success": true,
-  "message": "Spesa aggiunta!"
+  "message": "Transazione aggiunta!"
 }
 ```
 
 **Note:**
-- Il campo `expenseDate` è opzionale e usa la data corrente se non specificato
-- Le spese vengono salvate nella valuta originale
+- Il campo `transactionDate` è opzionale e usa la data corrente se non specificato
+- Le transazioni vengono salvate nella valuta originale
 - La conversione valutaria avviene dinamicamente durante il recupero dati (GET)
 
-#### PATCH /expense/:id
-Modifica una spesa esistente. Tutti i campi sono opzionali.
+#### PATCH /transactions/:id
+Modifica una transazione esistente. Tutti i campi sono opzionali.
 
 **Body:**
 ```json
@@ -263,18 +308,18 @@ Modifica una spesa esistente. Tutti i campi sono opzionali.
 ```json
 {
   "success": true,
-  "message": "Spesa modificata con successo!"
+  "message": "Transazione modificata con successo!"
 }
 ```
 
-#### DELETE /expense/:id
-Elimina una spesa.
+#### DELETE /transactions/:id
+Elimina una transazione.
 
 **Risposta:**
 ```json
 {
   "success": true,
-  "message": "Spesa eliminata con successo"
+  "message": "transazione eliminata con successo"
 }
 ```
 
@@ -288,19 +333,18 @@ Elimina una spesa.
 - `createdAt`: Data di creazione (automatica)
 - `updatedAt`: Data di aggiornamento (automatica)
 
-### Spesa
-- `title`: Titolo della spesa (1-50 caratteri)
+### Transazione
+- `title`: Titolo della transazione (1-50 caratteri)
 - `description`: Descrizione opzionale (max 100 caratteri)
-- `expenseDate`: Data della spesa (default: data corrente)
+- `transactionDate`: Data della transazione (default: data corrente)
 - `amount`: Importo nella valuta originale (numero positivo)
 - `currency`: Codice valuta (enum con 120+ valute: ISO 4217 + criptovalute)
 - `category`: Riferimento alla categoria (obbligatorio, ObjectId)
 - `createdAt`: Data di creazione (automatica)
 - `updatedAt`: Data di aggiornamento (automatica)
 
-**Campi calcolati dinamicamente (solo in GET /expense):**
-- `slug`: URL-friendly version del titolo (generato automaticamente)
-- Conversione importo nella valuta base richiesta (modifica il campo `amount`)
+**Campi calcolati dinamicamente (solo in GET /transactions):**
+- `amountInEUR`: Importo convertito nella valuta base specificata (il campo `amount` rimane nella valuta originale)
 
 ### ExchangeRate
 - `meta.last_updated_at`: Data ultimo aggiornamento dei tassi
@@ -319,23 +363,49 @@ L'applicazione supporta oltre 120 valute tra cui:
 ```
 src/
 ├── controllers/          # Logic di business per gli endpoint
-├── db/                  # Configurazione database (connection.ts)
-├── lib/                 # Utilità e helper (currencyClient.ts, utility.ts)
-├── middlewares/         # Middleware Express (errorsHandler.ts)
-├── models/             # Schemi Mongoose (schemas.ts) e tipi Zod (types.ts)
+│   ├── categoryControllers.ts
+│   └── transactionController.ts
+├── db/                  # Configurazione database
+│   └── connection.ts
+├── lib/                 # Utilità e helper
+│   ├── currencyClient.ts       # Client Axios per API esterne
+│   ├── utility.ts              # Conversione valute e arrotondamenti
+│   ├── validations.ts          # Validazione date e categorie
+│   ├── dumbOneRates.ts         # Fetch tassi di cambio mancanti
+│   └── dumpHistoricalRates.ts  # Fetch tassi storici
+├── middlewares/         # Middleware Express
+│   └── errorsHandler.ts
+├── models/             # Definizioni modelli Mongoose
+│   └── models.ts
 ├── routers/            # Definizione delle rotte API
+│   ├── categoriesRoute.ts
+│   └── transactionsRouter.ts
+├── schemas/            # Schemi Mongoose
+│   ├── categoriesSchemas.ts
+│   ├── transactionsSchemas.ts
+│   ├── exchangeRatesSchemas.ts
+│   └── index.ts
 ├── seeders/            # Script per popolare il database
+│   └── historicalExchangeRates.ts
+├── types/              # Tipi TypeScript e schemi Zod
+│   ├── commonTypes.ts          # Tipi condivisi (codes, ObjectId, TSuccess)
+│   ├── categoriesTypes.ts      # Zod schemas per categorie
+│   ├── transactionsTypes.ts    # Zod schemas per transazioni
+│   ├── apiResponsesTypes.ts    # Tipi per risposte API esterne
+│   └── index.ts
 └── index.ts            # Entry point dell'applicazione
 ```
 
 ### Pattern Architetturali
 
-- **Validazione duale**: Gli schemi Zod in `src/models/types.ts` definiscono la validazione dei dati, mentre gli schemi Mongoose in `src/models/schemas.ts` definiscono la struttura del database. I due schemi sono sincronizzati.
+- **Architettura modulare**: Separazione in directory dedicate per types, schemas, models, e utilities per una migliore organizzazione del codice
+- **Validazione duale**: Gli schemi Zod in `src/types/` definiscono la validazione dei dati, mentre gli schemi Mongoose in `src/schemas/` definiscono la struttura del database. I due schemi sono sincronizzati.
 - **Error handling centralizzato**: Tutti gli errori (Zod, standard, sconosciuti) vengono gestiti dal middleware in `src/middlewares/errorsHandler.ts`.
-- **Popolamento relazioni**: Le query usano `.populate()` di Mongoose per includere automaticamente i dati delle relazioni (es. categoria padre, categoria della spesa).
+- **Popolamento relazioni**: Le query usano `.populate().lean()` di Mongoose per includere automaticamente i dati delle relazioni con performance ottimizzate.
 - **Graceful shutdown**: Il server gestisce SIGINT e SIGTERM per disconnettersi correttamente da MongoDB prima di terminare.
-- **Conversione dinamica valute**: La conversione valutaria avviene durante il recupero delle spese (GET /expense) tramite la funzione `convertExpenses()` in `src/lib/utility.ts`. La formula di conversione è: `(amount / expenseCurrencyData.value) * baseCurrencyData.value`, usando i tassi di cambio storici più recenti disponibili alla data della spesa.
-- **Generazione slug**: Il campo `slug` viene generato automaticamente dal titolo della spesa durante il recupero (GET /expense) tramite la funzione `createSlug()` in `src/lib/utility.ts`.
+- **Conversione dinamica valute**: La conversione valutaria avviene durante il recupero delle transazioni (GET /transactions) tramite la funzione `convertTransaction()` in `src/lib/utility.ts`. La formula di conversione è: `(amount / transactionCurrencyData.value) * baseCurrencyData.value`, usando i tassi di cambio storici più recenti disponibili alla data della transazione.
+- **Fetch automatico tassi di cambio**: Se i tassi di cambio mancano per una data specifica, il sistema li scarica automaticamente tramite `dumbOneRates()` per garantire conversioni accurate.
+- **Validazione categorie**: Le categorie parent devono esistere e avere lo stesso tipo (income/expense) della categoria figlia tramite `validateNewCategory()` in `src/lib/validations.ts`.
 
 ## 🔧 Stack Tecnologico
 

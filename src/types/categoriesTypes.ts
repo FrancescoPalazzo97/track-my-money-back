@@ -1,5 +1,6 @@
 import z from "zod";
 import { objectIdZSchema } from "./";
+import { Types } from "mongoose";
 
 /**
  * SCHEMI E TIPI PER LE CATEGORIE
@@ -26,4 +27,4 @@ export const CategoryInputZSchemaForPatch = CategoryInputZSchema
 type TCategory = z.infer<typeof CategoryZSchema>;
 export type TCategoryInput = z.infer<typeof CategoryInputZSchema>;
 export type CategoryDocument = TCategory & Document;
-export type CategoryLean = z.infer<typeof CategoryZSchema> & { _id: import('mongoose').Types.ObjectId };
+export type CategoryLean = z.infer<typeof CategoryZSchema> & { _id: Types.ObjectId };
