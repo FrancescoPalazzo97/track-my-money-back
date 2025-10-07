@@ -1,11 +1,11 @@
 import { Schema } from "mongoose";
-import { CategoryDocument } from "../models";
+import { CategoryDocument } from "../types";
 
 /**
  * Schema Mongoose per le categorie
  * Supporta categorie di tipo income e expense con struttura gerarchica
  */
-const categorySchema = new Schema<CategoryDocument>({
+export const categorySchema = new Schema<CategoryDocument>({
     // Nome della categoria
     name: {
         type: String,

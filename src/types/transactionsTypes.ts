@@ -1,5 +1,5 @@
 import z from "zod";
-import { codes, CodesSchema, objectIdSchema } from "./";
+import { codes, CodesSchema, objectIdZSchema } from "./";
 
 /**
  * SCHEMI E TIPI PER LE SPESE/ENTRATE
@@ -11,7 +11,7 @@ export const TransactionInputZSchema = z.object({
     transactionDate: z.coerce.date().optional(), // Data della spesa (accetta stringhe ISO e converte in Date)
     amount: z.number().nonnegative(), // Importo
     currency: CodesSchema, // Codice valuta
-    category: objectIdSchema, // Riferimento alla categoria
+    category: objectIdZSchema, // Riferimento alla categoria
 });
 
 // Schema per PATCH spesa (tutti i campi opzionali, esclusi exchangeRateSnapshot e convertedAmount)

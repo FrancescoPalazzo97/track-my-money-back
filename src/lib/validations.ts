@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import { CategoryModel, TCategoryInput } from "../models";
+import { TCategoryInput } from "../types";
+import { CategoryModel } from "../models";
 
 export async function validateNewCategory(input: TCategoryInput) {
     if (input.parentCategory) {

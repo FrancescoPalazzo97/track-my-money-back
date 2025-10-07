@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import { ExchangeRateModel, TransactionDocument, TCodes, TGetTransaction } from "../models";
+import { TransactionDocument, TCodes, TGetTransaction } from "../types";
+import { ExchangeRateModel } from "../models";
 import { FlattenMaps } from "mongoose";
 import { dumbOneRates } from "./";
 

@@ -1,5 +1,5 @@
 import z from "zod";
-import { objectIdSchema } from "./";
+import { objectIdZSchema } from "./";
 
 /**
  * SCHEMI E TIPI PER LE CATEGORIE
@@ -9,7 +9,7 @@ export const CategoryInputZSchema = z.object({
     name: z.string().trim().min(1).max(50), // Nome della categoria
     type: z.enum(['income', 'expense']), // Tipo: income o expense
     description: z.string().max(200).optional(), // Descrizione opzionale
-    parentCategory: objectIdSchema.optional() // ID categoria padre
+    parentCategory: objectIdZSchema.optional() // ID categoria padre
 });
 
 // Schema categoria completo

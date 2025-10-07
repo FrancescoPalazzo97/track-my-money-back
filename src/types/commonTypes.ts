@@ -37,7 +37,7 @@ export const codes = [
 export const CodesSchema = z.enum(codes);
 export type TCodes = z.infer<typeof CodesSchema>;
 
-const createObjectIdSchema = () => z
+const createObjectIdZSchema = () => z
     .union([
         z.string().refine(
             (val) => Types.ObjectId.isValid(val),
@@ -49,7 +49,7 @@ const createObjectIdSchema = () => z
         typeof val === 'string' ? new Types.ObjectId(val) : val
     );
 
-export const objectIdSchema = createObjectIdSchema();
+export const objectIdZSchema = createObjectIdZSchema();
 
 // Schema per messaggi di successo
 const SuccessSchema = z.object({

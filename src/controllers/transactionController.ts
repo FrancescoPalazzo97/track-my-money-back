@@ -1,13 +1,6 @@
 import { Request, Response } from "express";
-import {
-    TransactionInputZSchema,
-    TransactionModel,
-    TSuccess,
-    objectIdSchema,
-    TransactionInputZSchemaForPatch,
-    GetTransactionQueryZSchema,
-    TGetTransaction
-} from "../models";
+import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TGetTransaction } from "../types";
+import { TransactionModel } from "../models";
 import { convertTransaction, validateDate } from '../lib';
 
 export const getTransactions = async (req: Request, res: Response) => {
@@ -33,7 +26,7 @@ export const getTransactions = async (req: Request, res: Response) => {
 const CurrencySchema = GetTransactionQueryZSchema.omit({ startDate: true, endDate: true })
 
 export const getTransactionById = async (req: Request, res: Response) => {
-    const transactionId = objectIdSchema.parse(req.params.id);
+    const transactionId = objectIdZSchema.parse(req.params.id);
     const { baseCurrency = "EUR" } = CurrencySchema.parse(req.query);
     const transaction = await TransactionModel.findById(transactionId).lean();
     if (!transaction) {
@@ -50,14 +43,14 @@ export const addNewTransaction = async (req: Request, res: Response<TSuccess>) =
 };
 
 export const deleteTransaction = async (req: Request, res: Response<TSuccess>) => {
-    const transactionId = objectIdSchema.parse(req.params.id);
+    const transactionId = objectIdZSchema.parse(req.params.id);
     const opereationResult = await TransactionModel.deleteOne({ _id: transactionId });
     if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la transazione non è stata trovata!');
     res.status(200).json({ success: true, message: "transazione eliminata con successo" });
 };
 
 export const modifyTransaction = async (req: Request, res: Response<TSuccess>) => {
-    const transactionId = objectIdSchema.parse(req.params.id);
+    const transactionId = objectIdZSchema.parse(req.params.id);
     const updates = TransactionInputZSchemaForPatch.parse(req.body);
     const operationResult = await TransactionModel.findByIdAndUpdate(
         transactionId,

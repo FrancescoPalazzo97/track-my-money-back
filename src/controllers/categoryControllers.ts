@@ -1,11 +1,6 @@
 import { Request, Response } from "express";
-import {
-    CategoryInputZSchema,
-    CategoryModel,
-    objectIdSchema,
-    TSuccess,
-    CategoryInputZSchemaForPatch
-} from "../models";
+import { CategoryInputZSchema, objectIdZSchema, TSuccess, CategoryInputZSchemaForPatch } from "../types";
+import { CategoryModel } from "../models";
 import { validateNewCategory } from "../lib";
 
 export const getAllCategories = async (req: Request, res: Response) => {
@@ -16,7 +11,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
 }
 
 export const getCategoryById = async (req: Request, res: Response) => {
-    const categoryId = objectIdSchema.parse(req.params.id);
+    const categoryId = objectIdZSchema.parse(req.params.id);
     const category = await CategoryModel.findById(categoryId);
     res.status(201).json(category);
 };
@@ -31,14 +26,14 @@ export const addNewCategory = async (req: Request, res: Response<TSuccess>) => {
 }
 
 export const deleteCategory = async (req: Request, res: Response<TSuccess>) => {
-    const categoryId = objectIdSchema.parse(req.params.id);
+    const categoryId = objectIdZSchema.parse(req.params.id);
     const opereationResult = await CategoryModel.deleteOne({ _id: categoryId });
     if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la categoria non esiste!');
     res.status(201).json({ success: true, message: 'Categoria Eliminata con successo!' });
 }
 
 export const modifyCategory = async (req: Request, res: Response<TSuccess>) => {
-    const categoryId = objectIdSchema.parse(req.params.id);
+    const categoryId = objectIdZSchema.parse(req.params.id);
     const updates = CategoryInputZSchemaForPatch.parse(req.body);
     const opereationResult = await CategoryModel.findByIdAndUpdate(
         categoryId,
