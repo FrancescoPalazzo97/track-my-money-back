@@ -1,13 +1,35 @@
 import { Request, Response } from "express";
-import { CategoryInputZSchema, objectIdZSchema, TSuccess, CategoryInputZSchemaForPatch } from "../types";
+import { CategoryInputZSchema, objectIdZSchema, TSuccess, CategoryInputZSchemaForPatch, CategoryLean } from "../types";
 import { CategoryModel } from "../models";
 import { validateNewCategory } from "../lib";
 
 export const getAllCategories = async (req: Request, res: Response) => {
-    const categories = await CategoryModel.find();
-    const a = categories.filter(cat => !cat.parentCategory);
-    console.log(a)
-    res.status(201).json(categories)
+    const group = req.query.group === 'true';
+    if (group) {
+        const categories: CategoryLean[] = await CategoryModel.find().lean();
+        const mainCategories = categories.filter(cat => !cat.parentCategory);
+
+        const getSubCategories = (category: CategoryLean): CategoryLean[] => {
+            return categories
+                .filter(subCat =>
+                    subCat.parentCategory?.toString() === category._id.toString()
+                )
+                .map(subCat => ({
+                    ...subCat,
+                    subCategories: getSubCategories(subCat)
+                }));
+        };
+
+        const filteredCategories = mainCategories.map(mainCat => ({
+            ...mainCat,
+            subCategories: getSubCategories(mainCat)
+        }));
+
+        res.status(200).json(filteredCategories);
+    } else {
+        const categories = await CategoryModel.find();
+        res.status(200).json(categories);
+    }
 }
 
 export const getCategoryById = async (req: Request, res: Response) => {
