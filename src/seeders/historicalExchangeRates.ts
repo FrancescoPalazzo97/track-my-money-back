@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
-import dumpHistoricalrates from "../lib/dumpHistoricalrates";
 import { connectToMongo, disconnectToMongo } from "../db/connection";
-import { currencyClient } from "../lib/currencyClient";
+import { currencyClient, dumpHistoricalRates } from "../lib";
 
 (async () => {
     await connectToMongo();
@@ -23,7 +22,7 @@ import { currencyClient } from "../lib/currencyClient";
     let doneRequestPerMinute = 0;
 
     while (totUsedRequest < totRequestRemainig) {
-        const histirocalRates = await dumpHistoricalrates(currentDate.format('YYYY-MM-DD'));
+        const histirocalRates = await dumpHistoricalRates(currentDate.format('YYYY-MM-DD'));
         if (histirocalRates === null) {
             break;
         }

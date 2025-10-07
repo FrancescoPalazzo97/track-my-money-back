@@ -1,11 +1,17 @@
 import { Request, Response } from "express";
-import { CategoryInputZSchema, CategoryModel, objectIdSchema, TSuccess, CategoryInputZSchemaForPatch } from "../models";
+import {
+    CategoryInputZSchema,
+    CategoryModel,
+    objectIdSchema,
+    TSuccess,
+    CategoryInputZSchemaForPatch
+} from "../models";
+import { validateNewCategory } from "../lib";
 
 export const getAllCategories = async (req: Request, res: Response) => {
-    const categories = await CategoryModel.find().populate({
-        path: 'parentCategory',
-        select: 'name type'
-    })
+    const categories = await CategoryModel.find();
+    const a = categories.filter(cat => !cat.parentCategory);
+    console.log(a)
     res.status(201).json(categories)
 }
 
@@ -13,10 +19,13 @@ export const getCategoryById = async (req: Request, res: Response) => {
     const categoryId = objectIdSchema.parse(req.params.id);
     const category = await CategoryModel.findById(categoryId);
     res.status(201).json(category);
-}
+};
 
 export const addNewCategory = async (req: Request, res: Response<TSuccess>) => {
-    const result = CategoryInputZSchema.parse(req.body)
+    const result = CategoryInputZSchema.parse(req.body);
+
+    await validateNewCategory(result);
+
     await CategoryModel.insertOne(result);
     res.status(201).json({ success: true, message: 'Nuova Categoria aggiunta!' });
 }

@@ -8,7 +8,7 @@ import {
     GetTransactionQueryZSchema,
     TGetTransaction
 } from "../models";
-import { convertTransaction, validateDate } from "../lib/utility";
+import { convertTransaction, validateDate } from '../lib';
 
 export const getTransactions = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetTransactionQueryZSchema.parse(req.query);

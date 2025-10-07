@@ -1,6 +1,10 @@
 import { Schema, model } from "mongoose";
-import type { CategoryDocument, TransactionDocument, ExchangeRateDocument } from "./types";
-import { codes } from "./types";
+import {
+    CategoryDocument,
+    TransactionDocument,
+    ExchangeRateDocument,
+    codes
+} from "./";
 
 /**
  * Schema Mongoose per le categorie

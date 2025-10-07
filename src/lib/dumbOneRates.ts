@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { ExchangeRateModel, TExchangeRateResponse } from "../models";
-import { currencyClient } from "./currencyClient";
+import { currencyClient } from "./";
 
 export default async function (times: number, targetDate: dayjs.Dayjs) {
     for (let i = 0; i < times; i++) {
