@@ -4,6 +4,7 @@
 
 import z from "zod";
 import { codes } from "./";
+import { Types } from "mongoose";
 
 // Schema per una singola valuta
 const CurrencyRateSchema = z.object({
@@ -12,23 +13,29 @@ const CurrencyRateSchema = z.object({
 });
 
 // Schema per i metadati della risposta
-const ExchangeRateMetaSchema = z.object({
+const ExchangeRateMetaZSchema = z.object({
     last_updated_at: z.string() // Data ultimo aggiornamento in formato ISO string
 });
 
 // Schema per la risposta completa dell'API exchange rate
-const ExchangeRateResponseSchema = z.object({
-    meta: ExchangeRateMetaSchema, // Metadati
+export const ExchangeRateResponseZSchema = z.object({
+    meta: ExchangeRateMetaZSchema, // Metadati
     data: z.record(z.enum(codes), CurrencyRateSchema) // Oggetto con codici valuta come chiavi
         .transform((obj) => new Map(Object.entries(obj))) // Converte in Map per compatibilità con Mongoose
 });
 
+const ExchangeRateZSchema = z.object({
+    meta: ExchangeRateMetaZSchema,
+    data: z.record(z.enum(codes), CurrencyRateSchema)
+})
+
 // Tipi TypeScript
 type TCurrencyRate = z.infer<typeof CurrencyRateSchema>;
-type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaSchema>;
-export type TExchangeRateResponse = z.infer<typeof ExchangeRateResponseSchema>;
+type TExchangeRateMeta = z.infer<typeof ExchangeRateMetaZSchema>;
+export type TExchangeRateResponse = z.infer<typeof ExchangeRateResponseZSchema>;
 export type ExchangeRateDocument = TExchangeRateResponse & Document;
 
+export type TExchangeRateLean = z.infer<typeof ExchangeRateZSchema> & { _id: Types.ObjectId };
 /**
  * SCHEMI PER LE QUOTE API
  */
