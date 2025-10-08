@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TConvertedTransaction } from "../types";
+import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TConvertedTransaction, TExchangeRateLean } from "../types";
 import { TransactionModel } from "../models";
 import { convertTransaction, validateDate } from '../lib';
 

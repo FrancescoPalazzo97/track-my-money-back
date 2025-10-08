@@ -6,8 +6,11 @@ import {
     getTransactionById,
     modifyTransaction
 } from "../controllers/transactionController";
+import { verifyExchangeRates } from "../middlewares";
 
 const router = express.Router();
+
+router.use(verifyExchangeRates);
 
 router.get('/', getTransactions);
 
