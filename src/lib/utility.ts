@@ -1,16 +1,13 @@
 import dayjs from "dayjs";
-import { TransactionDocument, TCodes, TGetTransaction } from "../types";
-import { ExchangeRateModel } from "../models";
-import { FlattenMaps } from "mongoose";
+import { TCodes, TTransactionLean, TCategoryLean, TCategoryWithSubCategories, TConvertedTransaction } from "../types";
+import { ExchangeRateModel, TransactionModel } from "../models";
 import { dumbOneRates } from "./";
 
 export function round(num: number, decimali: number) {
     return Math.round(num * Math.pow(10, decimali)) / Math.pow(10, decimali);
 };
 
-type TTransaction = (FlattenMaps<TransactionDocument> & { _id: any, __v: number });
-
-export async function convertTransaction(transaction: TTransaction, baseCurrency: TCodes): Promise<TGetTransaction> {
+export async function convertTransaction(transaction: TTransactionLean, baseCurrency: TCodes): Promise<TConvertedTransaction> {
     const newTransaction = { ...transaction, amountInEUR: transaction.amount };
     if (transaction.currency !== "EUR") {
         let exchangeRate = await ExchangeRateModel.findOne({
@@ -48,3 +45,27 @@ export async function convertTransaction(transaction: TTransaction, baseCurrency
     };
     return newTransaction;
 };
+
+export function getSubCategories(categories: TCategoryLean[], category: TCategoryLean): TCategoryWithSubCategories[] {
+    return categories
+        .filter(subCat =>
+            subCat.parentCategory?.toString() === category._id.toString()
+        )
+        .map(subCat => ({
+            ...subCat,
+            subCategories: getSubCategories(categories, subCat)
+        }));
+};
+
+export async function getCategoriesWitTransactions(categories: TCategoryLean[]) {
+    const transactions: TTransactionLean[] = await TransactionModel
+        .find()
+        .lean()
+        .sort({ 'transactionDate': -1 });
+
+    return categories.map(cat => {
+        const transactionsWithSameId = transactions
+            .filter(t => t.category.toString() === cat._id.toString());
+        return { ...cat, transactions: transactionsWithSameId };
+    })
+}

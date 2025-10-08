@@ -13,7 +13,7 @@ const CurrencyRateSchema = z.object({
 
 // Schema per i metadati della risposta
 const ExchangeRateMetaSchema = z.object({
-    last_updated_at: z.date() // Data ultimo aggiornamento
+    last_updated_at: z.string() // Data ultimo aggiornamento in formato ISO string
 });
 
 // Schema per la risposta completa dell'API exchange rate

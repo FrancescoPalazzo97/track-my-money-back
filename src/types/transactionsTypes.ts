@@ -1,5 +1,6 @@
 import z from "zod";
 import { codes, CodesSchema, objectIdZSchema } from "./";
+import { Types } from "mongoose";
 
 /**
  * SCHEMI E TIPI PER LE SPESE/ENTRATE
@@ -28,9 +29,10 @@ const TransactionZSchema = TransactionInputZSchema.extend({
 
 // Tipi TypeScript
 type TTransaction = z.infer<typeof TransactionZSchema>;
-export type TGetTransaction = TTransaction & { amountInEUR: number };
 type TTransactionInput = z.infer<typeof TransactionInputZSchema>;
 type TTransactionInputForPatch = z.infer<typeof TransactionInputZSchemaForPatch>;
+export type TTransactionLean = z.infer<typeof TransactionZSchema> & { _id: Types.ObjectId }
+export type TConvertedTransaction = TTransactionLean & { amountInEUR: number };
 export type TransactionDocument = TTransaction & Document;
 
 export const GetTransactionQueryZSchema = z.object({

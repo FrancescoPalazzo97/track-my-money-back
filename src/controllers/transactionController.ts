@@ -1,23 +1,23 @@
 import { Request, Response } from "express";
-import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TGetTransaction } from "../types";
+import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TConvertedTransaction } from "../types";
 import { TransactionModel } from "../models";
 import { convertTransaction, validateDate } from '../lib';
 
 export const getTransactions = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetTransactionQueryZSchema.parse(req.query);
+    const categoryId = req.query.categoryId === 'true';
     const [start, end] = validateDate(startDate, endDate);
     const transactions = await TransactionModel.find({
         transactionDate: {
             $gte: start,
             $lte: end
         }
-    })
-        .populate('category', '_id')
+    }).populate('category')
         .lean()
         .sort({ 'transactionDate': -1 });
-    let convertedTransactions: TGetTransaction[] = [];
-    for (const op of transactions) {
-        const convertedTransaction = await convertTransaction(op, baseCurrency);
+    let convertedTransactions: TConvertedTransaction[] = [];
+    for (const transaction of transactions) {
+        const convertedTransaction = await convertTransaction(transaction, baseCurrency);
         convertedTransactions.push(convertedTransaction)
     }
     res.status(201).json(convertedTransactions);
@@ -32,7 +32,7 @@ export const getTransactionById = async (req: Request, res: Response) => {
     if (!transaction) {
         throw new Error(`Transazione con ID: ${transactionId} non trovata!`);
     };
-    const convertedTransaction: TGetTransaction = await convertTransaction(transaction, baseCurrency)
+    const convertedTransaction: TConvertedTransaction = await convertTransaction(transaction, baseCurrency)
     res.status(201).json(convertedTransaction);
 };
 

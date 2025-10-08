@@ -1,33 +1,33 @@
 import { Request, Response } from "express";
-import { CategoryInputZSchema, objectIdZSchema, TSuccess, CategoryInputZSchemaForPatch, CategoryLean } from "../types";
+import { CategoryInputZSchema, objectIdZSchema, TSuccess, CategoryInputZSchemaForPatch, TCategoryLean } from "../types";
 import { CategoryModel } from "../models";
-import { validateNewCategory } from "../lib";
+import { getCategoriesWitTransactions, getSubCategories, validateNewCategory } from "../lib";;
 
 export const getAllCategories = async (req: Request, res: Response) => {
     const group = req.query.group === 'true';
-    if (group) {
-        const categories: CategoryLean[] = await CategoryModel.find().lean();
-        const mainCategories = categories.filter(cat => !cat.parentCategory);
+    const withTransactions = req.query.withTransactions === 'true';
 
-        const getSubCategories = (category: CategoryLean): CategoryLean[] => {
-            return categories
-                .filter(subCat =>
-                    subCat.parentCategory?.toString() === category._id.toString()
-                )
-                .map(subCat => ({
-                    ...subCat,
-                    subCategories: getSubCategories(subCat)
-                }));
-        };
+    const categories: TCategoryLean[] = await CategoryModel.find().lean();
 
+    if (group && withTransactions) {
+        const categoriesWithTransactions = await getCategoriesWitTransactions(categories);
+        const mainCategories = categoriesWithTransactions.filter(cat => !cat.parentCategory);
         const filteredCategories = mainCategories.map(mainCat => ({
             ...mainCat,
-            subCategories: getSubCategories(mainCat)
+            subCategories: getSubCategories(categoriesWithTransactions, mainCat)
         }));
-
         res.status(200).json(filteredCategories);
+    } else if (group) {
+        const mainCategories = categories.filter(cat => !cat.parentCategory);
+        const filteredCategories = mainCategories.map(mainCat => ({
+            ...mainCat,
+            subCategories: getSubCategories(categories, mainCat)
+        }));
+        res.status(200).json(filteredCategories);
+    } else if (withTransactions) {
+        const categoriesWithTransactions = await getCategoriesWitTransactions(categories);
+        res.status(200).json(categoriesWithTransactions);
     } else {
-        const categories = await CategoryModel.find();
         res.status(200).json(categories);
     }
 }
