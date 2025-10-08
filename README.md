@@ -233,10 +233,11 @@ GET /transactions?startDate=2024-01-01&endDate=2024-12-31&baseCurrency=EUR
 ```
 
 **Note:**
-- Gli importi vengono convertiti automaticamente nella valuta base specificata
+- Gli importi vengono convertiti automaticamente nella valuta base specificata tramite la funzione `convertTransaction()` in `src/lib/utility.ts`
 - Il campo `amountInEUR` contiene l'importo convertito (il campo `amount` rimane nella valuta originale)
-- La conversione usa i tassi di cambio storici alla data della transazione
-- Se i tassi di cambio mancano per una data specifica, vengono scaricati automaticamente
+- La conversione usa i tassi di cambio storici più recenti disponibili alla data della transazione
+- Se i tassi di cambio mancano per una data specifica, vengono scaricati automaticamente tramite `dumbOneRates()`
+- Il middleware `verifyExchangeRates` assicura che i tassi di cambio siano aggiornati prima di processare le richieste
 
 #### GET /transactions/:id
 Recupera una transazione specifica per ID con conversione valutaria opzionale.
@@ -290,8 +291,9 @@ Crea una nuova transazione.
 
 **Note:**
 - Il campo `transactionDate` è opzionale e usa la data corrente se non specificato
-- Le transazioni vengono salvate nella valuta originale
-- La conversione valutaria avviene dinamicamente durante il recupero dati (GET)
+- Le transazioni vengono salvate nella valuta originale tramite Mongoose `Model.insertOne()`
+- La conversione valutaria avviene dinamicamente durante il recupero dati (GET) tramite `convertTransaction()`
+- La validazione dei dati viene effettuata con Zod schema (`TransactionInputZSchema`) prima dell'inserimento
 
 #### PATCH /transactions/:id
 Modifica una transazione esistente. Tutti i campi sono opzionali.
@@ -369,14 +371,18 @@ src/
 │   └── connection.ts
 ├── lib/                 # Utilità e helper
 │   ├── currencyClient.ts       # Client Axios per API esterne
-│   ├── utility.ts              # Conversione valute e arrotondamenti
+│   ├── utility.ts              # Conversione valute, arrotondamenti, raggruppamenti
 │   ├── validations.ts          # Validazione date e categorie
 │   ├── dumbOneRates.ts         # Fetch tassi di cambio mancanti
-│   └── dumpHistoricalRates.ts  # Fetch tassi storici
+│   ├── dumpHistoricalRates.ts  # Fetch tassi storici
+│   └── index.ts
 ├── middlewares/         # Middleware Express
-│   └── errorsHandler.ts
+│   ├── errorsHandler.ts        # Gestione centralizzata errori
+│   ├── verifyExchangeRates.ts  # Verifica tassi di cambio aggiornati
+│   └── index.ts
 ├── models/             # Definizioni modelli Mongoose
-│   └── models.ts
+│   ├── models.ts
+│   └── index.ts
 ├── routers/            # Definizione delle rotte API
 │   ├── categoriesRoute.ts
 │   └── transactionsRouter.ts
@@ -399,10 +405,14 @@ src/
 ### Pattern Architetturali
 
 - **Architettura modulare**: Separazione in directory dedicate per types, schemas, models, e utilities per una migliore organizzazione del codice
+- **Barrel Exports**: Tutte le directory principali (`types/`, `schemas/`, `middlewares/`, `lib/`, `models/`) usano file `index.ts` per esportare i loro contenuti, abilitando import puliti
 - **Validazione duale**: Gli schemi Zod in `src/types/` definiscono la validazione dei dati, mentre gli schemi Mongoose in `src/schemas/` definiscono la struttura del database. I due schemi sono sincronizzati.
+- **Type Safety**: Gli schemi Zod definiscono la validazione runtime e i tipi TypeScript vengono inferiti usando `z.infer<>`
 - **Error handling centralizzato**: Tutti gli errori (Zod, standard, sconosciuti) vengono gestiti dal middleware in `src/middlewares/errorsHandler.ts`.
 - **Popolamento relazioni**: Le query usano `.populate().lean()` di Mongoose per includere automaticamente i dati delle relazioni con performance ottimizzate.
+- **Lean Queries**: Le query del database usano `.lean()` per migliori performance quando la modifica dei documenti non è necessaria
 - **Graceful shutdown**: Il server gestisce SIGINT e SIGTERM per disconnettersi correttamente da MongoDB prima di terminare.
+- **Middleware verifica tassi di cambio**: Le route delle transazioni usano il middleware `verifyExchangeRates` per assicurare che i tassi di cambio siano aggiornati prima di processare le richieste
 - **Conversione dinamica valute**: La conversione valutaria avviene durante il recupero delle transazioni (GET /transactions) tramite la funzione `convertTransaction()` in `src/lib/utility.ts`. La formula di conversione è: `(amount / transactionCurrencyData.value) * baseCurrencyData.value`, usando i tassi di cambio storici più recenti disponibili alla data della transazione.
 - **Fetch automatico tassi di cambio**: Se i tassi di cambio mancano per una data specifica, il sistema li scarica automaticamente tramite `dumbOneRates()` per garantire conversioni accurate.
 - **Validazione categorie**: Le categorie parent devono esistere e avere lo stesso tipo (income/expense) della categoria figlia tramite `validateNewCategory()` in `src/lib/validations.ts`.
