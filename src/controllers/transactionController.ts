@@ -5,7 +5,6 @@ import { convertTransaction, validateDate } from '../lib';
 
 export const getTransactions = async (req: Request, res: Response) => {
     const { startDate, endDate, baseCurrency = 'EUR' } = GetTransactionQueryZSchema.parse(req.query);
-    const categoryId = req.query.categoryId === 'true';
     const [start, end] = validateDate(startDate, endDate);
     const transactions = await TransactionModel.find({
         transactionDate: {

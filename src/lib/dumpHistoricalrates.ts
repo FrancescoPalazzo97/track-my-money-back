@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { TExchangeRateResponse } from "../types";
 import { ExchangeRateModel } from "../models";
-import { currencyClient } from ".";
+import { currencyClient } from "./";
 
 export default async function (dateString: string) {
     const date = dayjs(dateString);

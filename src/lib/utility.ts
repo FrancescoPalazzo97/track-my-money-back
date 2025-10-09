@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
-import { TCodes, TTransactionLean, TCategoryLean, TCategoryWithSubCategories, TConvertedTransaction, TExchangeRateLean } from "../types";
+import { TCodes, TTransactionLean, TCategoryLean, TCategoryWithSubCategories, TConvertedTransaction } from "../types";
 import { ExchangeRateModel, TransactionModel } from "../models";
-import { dumbOneRates } from "./";
 
 export function round(num: number, decimali: number) {
     return Math.round(num * Math.pow(10, decimali)) / Math.pow(10, decimali);

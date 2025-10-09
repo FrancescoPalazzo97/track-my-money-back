@@ -19,7 +19,7 @@ export async function validateNewCategory(input: TCategoryInput) {
 
     const categoryWithSameName = await CategoryModel.findOne({
         name: input.name
-    })
+    });
 
     if (categoryWithSameName) {
         throw new Error(`Esiste già una categoria con questo nome!`);
