@@ -50,6 +50,10 @@ export const addNewCategory = async (req: Request, res: Response<TSuccess>) => {
 export const deleteCategory = async (req: Request, res: Response<TSuccess>) => {
     const categoryId = objectIdZSchema.parse(req.params.id);
     const opereationResult = await CategoryModel.deleteOne({ _id: categoryId });
+    await CategoryModel.updateMany(
+        { parentCategory: categoryId },
+        { $unset: { parentCategory: "" } }
+    )
     if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la categoria non esiste!');
     res.status(201).json({ success: true, message: 'Categoria Eliminata con successo!' });
 }
