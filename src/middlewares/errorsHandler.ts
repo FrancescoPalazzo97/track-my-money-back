@@ -5,7 +5,7 @@ import { TSuccess } from '../types';
 export const errorsHandler = (
     error: unknown,
     req: Request,
-    res: Response<TSuccess>,
+    res: Response<TSuccess<void>>,
     next: NextFunction
 ) => {
     // Gestione errori Zod

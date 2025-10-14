@@ -57,4 +57,8 @@ const SuccessSchema = z.object({
     message: z.string() // Messaggio descrittivo
 });
 
-export type TSuccess = z.infer<typeof SuccessSchema>;
+export type TSuccess<T> = {
+    success: boolean,
+    message: string,
+    data?: T
+}
