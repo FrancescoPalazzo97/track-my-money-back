@@ -5,7 +5,7 @@ import { TSuccess } from '../types';
 export const errorsHandler = (
     error: unknown,
     req: Request,
-    res: Response<TSuccess<void>>,
+    res: Response<TSuccess<null>>,
     next: NextFunction
 ) => {
     // Gestione errori Zod
@@ -14,7 +14,8 @@ export const errorsHandler = (
             success: false,
             message: error.issues.map(issue =>
                 `ZodError: ${issue.path.join('.')}: ${issue.message}`
-            ).join(', ')
+            ).join(', '),
+            data: null
         });
     }
 
@@ -22,13 +23,15 @@ export const errorsHandler = (
     if (error instanceof Error) {
         return res.status(500).json({
             success: false,
-            message: `Error: ${error.message}`
+            message: `Error: ${error.message}`,
+            data: null
         });
     }
 
     // Errori sconosciuti
     return res.status(500).json({
         success: false,
-        message: "Errore sconosciuto"
+        message: "Errore sconosciuto",
+        data: null
     });
 }

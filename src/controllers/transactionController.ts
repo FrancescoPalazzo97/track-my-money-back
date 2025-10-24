@@ -12,7 +12,7 @@ export const getTransactions = async (req: Request, res: Response<TSuccess<TTran
             $gte: start,
             $lte: end
         }
-    }).populate('category')
+    }).populate('category', '_id type')
         .lean()
         .sort({ 'transactionDate': -1 });
     let convertedTransactions: TConvertedTransaction[] = [];

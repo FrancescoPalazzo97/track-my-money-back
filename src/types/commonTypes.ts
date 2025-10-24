@@ -60,5 +60,5 @@ const SuccessSchema = z.object({
 export type TSuccess<T> = {
     success: boolean,
     message: string,
-    data?: T
+    data: T
 }

@@ -56,7 +56,7 @@ export const getAllCategories = async (req: Request, res: Response<TSuccess<Cate
         res.status(200).json({
             success: true,
             message: 'Elenco categorie',
-            data: categories
+            data: categories.sort((a, b) => a.name.localeCompare(b.name))
         });
     }
 }
@@ -82,15 +82,26 @@ export const addNewCategory = async (req: Request, res: Response<TSuccess<TCateg
 
 export const deleteCategory = async (req: Request, res: Response<TSuccess<Types.ObjectId>>) => {
     const categoryId = objectIdZSchema.parse(req.params.id);
-    const opereationResult = await CategoryModel.deleteOne({ _id: categoryId });
-    await CategoryModel.updateMany(
-        { parentCategory: categoryId },
-        { $unset: { parentCategory: "" } }
-    )
-    if (opereationResult.deletedCount === 0) throw new Error('Impossibile eliminare la categoria non esiste!');
+    const deletedCategory: TCategoryLean | null = await CategoryModel.findByIdAndDelete(categoryId);
+    if (!deletedCategory) throw new Error('Impossibile eliminare la categoria non esiste!');
+
+    if (deletedCategory.parentCategory) {
+        // Se aveva un genitore, le figlie ereditano quel genitore
+        await CategoryModel.updateMany(
+            { parentCategory: categoryId },
+            { $set: { parentCategory: deletedCategory.parentCategory } }
+        );
+    } else {
+        // Se era di primo livello, le figlie diventano di primo livello
+        await CategoryModel.updateMany(
+            { parentCategory: categoryId },
+            { $unset: { parentCategory: "" } }
+        );
+    }
+
     res.status(201).json({
         success: true,
-        message: 'Categoria Eliminata con successo!',
+        message: `Categoria ${deletedCategory.name} Eliminata con successo!`,
         data: categoryId
     });
 }
