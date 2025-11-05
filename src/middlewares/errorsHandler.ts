@@ -21,7 +21,7 @@ export const errorsHandler = (
 
     // Errori standard
     if (error instanceof Error) {
-        return res.status(500).json({
+        return res.status(400).json({
             success: false,
             message: `Error: ${error.message}`,
             data: null
@@ -29,7 +29,7 @@ export const errorsHandler = (
     }
 
     // Errori sconosciuti
-    return res.status(500).json({
+    return res.status(400).json({
         success: false,
         message: "Errore sconosciuto",
         data: null

@@ -1,10 +1,12 @@
 import dayjs from "dayjs";
-import { TCategoryInput } from "../types";
+import { TCategoryInput, TCategoryLean } from "../types";
 import { CategoryModel } from "../models";
 
 export async function validateNewCategory(input: TCategoryInput) {
+
     if (input.parentCategory) {
-        const categoryExist = await CategoryModel.findOne({
+
+        const categoryExist: TCategoryLean | null = await CategoryModel.findOne({
             _id: input.parentCategory
         });
 
@@ -15,6 +17,10 @@ export async function validateNewCategory(input: TCategoryInput) {
         if (categoryExist.type !== input.type) {
             throw new Error(`Non puoi mettere come categoria padre una categoria di un tipo diverso!`);
         };
+
+        if (input.parentCategory === categoryExist._id) {
+            throw new Error(`La categoria non può essere figlia di se stessa!`)
+        }
     };
 
     const categoryWithSameName = await CategoryModel.findOne({

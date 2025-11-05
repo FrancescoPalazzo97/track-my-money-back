@@ -12,11 +12,9 @@ export const verifyExchangeRates: RequestHandler = async (req, res, next) => {
         }
     }).sort({ 'meta.last_updated_at': -1 })
         .lean();
-
     if (!exchangeRate) {
         throw new Error(`Exchange rates non trovati!`);
     };
-
     const mostRecentDateString = dayjs(exchangeRate.meta.last_updated_at).format('YYYY-MM-DD');
     const diff = dayjs(mostRecentDateString).diff(dayjs(today), 'day');
     console.log(`${dayjs(mostRecentDateString).format('YYYY-MM-DD')} - ${dayjs(today).format('YYYY-MM-DD')} = ${diff}`)
@@ -24,5 +22,6 @@ export const verifyExchangeRates: RequestHandler = async (req, res, next) => {
         console.log('Eseguo dumbOneRates')
         await dumbOneRates(Math.abs(diff), dayjs(mostRecentDateString));
     }
+
     next();
 }

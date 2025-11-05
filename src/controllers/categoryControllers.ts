@@ -109,9 +109,21 @@ export const deleteCategory = async (req: Request, res: Response<TSuccess<Types.
 export const modifyCategory = async (req: Request, res: Response<TSuccess<TCategoryLean>>) => {
     const categoryId = objectIdZSchema.parse(req.params.id);
     const updates = CategoryInputZSchemaForPatch.parse(req.body);
+    if (categoryId.toString() == updates.parentCategory?.toString()) {
+        throw new Error(`Le categorie non possono essere figlie di loro stesse!`);
+    }
+
+    // Se parentCategory non è presente nel body, la rimuoviamo dal database
+    const updateOperation: {
+        $set: typeof updates; $unset?: { parentCategory: "" }
+    } = { $set: updates };
+    if (!('parentCategory' in req.body) && Object.keys(updates).length > 0) {
+        updateOperation.$unset = { parentCategory: "" };
+    }
+
     const opereationResult: TCategoryLean | null = await CategoryModel.findByIdAndUpdate(
         categoryId,
-        updates,
+        updateOperation,
         { new: true, runValidators: true }
     );
     if (!opereationResult) throw new Error(`Impossibile modificare la categoria non esiste!`);

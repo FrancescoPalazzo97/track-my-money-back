@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { TransactionInputZSchema, TransactionInputZSchemaForPatch, TSuccess, objectIdZSchema, GetTransactionQueryZSchema, TConvertedTransaction, TExchangeRateLean, TTransactionLean } from "../types";
 import { TransactionModel } from "../models";
-import { convertTransaction, validateDate } from '../lib';
+import { convertTransaction, round, validateDate } from '../lib';
 import { Types } from "mongoose";
 
 export const getTransactions = async (req: Request, res: Response<TSuccess<TTransactionLean[]>>) => {
@@ -32,11 +32,12 @@ const CurrencySchema = GetTransactionQueryZSchema.omit({ startDate: true, endDat
 export const getTransactionById = async (req: Request, res: Response<TSuccess<TTransactionLean>>) => {
     const transactionId = objectIdZSchema.parse(req.params.id);
     const { baseCurrency = "EUR" } = CurrencySchema.parse(req.query);
-    const transaction = await TransactionModel.findById(transactionId).lean();
+    const transaction = await TransactionModel.findById(transactionId).populate('category', '_id type').lean();
     if (!transaction) {
         throw new Error(`Transazione con ID: ${transactionId} non trovata!`);
     };
     const convertedTransaction: TConvertedTransaction = await convertTransaction(transaction, baseCurrency)
+    console.log('converted della get: ', convertedTransaction)
     res.status(201).json({
         success: true,
         message: 'Elenco delle transazioni',
@@ -46,11 +47,15 @@ export const getTransactionById = async (req: Request, res: Response<TSuccess<TT
 
 export const addNewTransaction = async (req: Request, res: Response<TSuccess<TTransactionLean>>) => {
     const result = TransactionInputZSchema.parse(req.body);
-    const newTransaction: TTransactionLean = await TransactionModel.insertOne(result);
+    result.amount = round(result.amount, 2);
+    const newTransaction = await TransactionModel.insertOne(result);
+    const newTransactionLean: TTransactionLean = newTransaction.toObject();
+    //IMPORTANTE: C'è ancora da sistemare la questione del settaggio della base currency
+    const convertedTransaction = await convertTransaction(newTransactionLean, 'EUR')
     res.status(201).json({
         success: true,
         message: 'Transazione aggiunta!',
-        data: newTransaction
+        data: convertedTransaction
     });
 };
 
@@ -68,15 +73,17 @@ export const deleteTransaction = async (req: Request, res: Response<TSuccess<Typ
 export const modifyTransaction = async (req: Request, res: Response<TSuccess<TTransactionLean>>) => {
     const transactionId = objectIdZSchema.parse(req.params.id);
     const updates = TransactionInputZSchemaForPatch.parse(req.body);
-    const operationResult: TTransactionLean | null = await TransactionModel.findByIdAndUpdate(
+    const operationResult = await TransactionModel.findByIdAndUpdate(
         transactionId,
         updates,
         { new: true, runValidators: true }
     );
     if (!operationResult) throw new Error('Impossibile modificare la transazione non è stata trovata!');
+    const newTransaction = operationResult.toObject()
+    const convertedTransaction = await convertTransaction(newTransaction, 'EUR')
     res.status(200).json({
         success: true,
         message: "Transazione modificata con successo!",
-        data: operationResult
+        data: convertedTransaction
     })
 }
