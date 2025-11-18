@@ -9,7 +9,7 @@ export const codes = [
     'ADA', 'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARB', 'ARS', 'AUD', 'AVAX', 'AWG', 'AZN',
     'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BNB', 'BND', 'BOB', 'BRL', 'BSD', 'BTC', 'BTN', 'BWP', 'BYN', 'BYR', 'BZD',
     'CAD', 'CDF', 'CHF', 'CLF', 'CLP', 'CNY', 'COP', 'CRC', 'CUC', 'CUP', 'CVE', 'CZK',
-    'DAI', 'DJF', 'DKK', 'DOP', 'DZD',
+    'DAI', 'DJF', 'DKK', 'DOP', 'DOT', 'DZD',
     'EGP', 'ERN', 'ETB', 'ETH', 'EUR',
     'FJD', 'FKP',
     'GBP', 'GEL', 'GGP', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD',
